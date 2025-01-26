@@ -1,3 +1,5 @@
+import { InspireIdea } from "../inspireIdea/InspireIdea";
+import { About } from "./about/About";
 import GetAppointment from "./appointment/GetAppointment";
 import Category from "./category/Category";
 import Customize from "./customize/Customize";
@@ -10,8 +12,10 @@ function Home() {
     <>
       <Category />
       <LandingVedio />
+      <About />
       <Deal />
       <Customize />
+      <InspireIdea />
       <OurServices />
       <GetAppointment />
     </>
