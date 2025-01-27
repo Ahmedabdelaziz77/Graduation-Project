@@ -1,7 +1,6 @@
-import React from "react";
-import img1 from "../../../../images/aboutImg1.avif";
-import img2 from "../../../../images/aboutImg2.avif";
-export const About = () => {
+import img1 from "/public/inspire idea/aboutImg1.avif";
+import img2 from "/public/inspire idea/aboutImg2.avif";
+const About = () => {
   return (
     <>
       <div className="p-20 flex items-center justify-center gap-10">
@@ -53,8 +52,8 @@ export const About = () => {
             video doorbell, and smart door lock to monitor, open or close the
             front door remotely as well as get notified with any access event.
             Moreover, the controlled devices such as thermostats and switches to
-            adjust your own scenario 'Wake-Up Mode' or 'Away From Home Mode'
-            automatically and according to your schedule.
+            adjust your own scenario &apos;Wake-Up Mode&apos; or &apos;Away From
+            Home Mode&apos; automatically and according to your schedule.
           </p>
           <p className="text-gray-700">
             In addition, with the smart security camera systems, smart lock,
@@ -64,9 +63,9 @@ export const About = () => {
             potential dangers or property damage happened, all with just a click
             or voice command to arm the smart house security camera system.
             Moreover, check on your smart home from anywhere using the mobile
-            app, adjust the temperature, camera's view, Air conditions control,
-            curtain closure, lighting density and colours, energy efficiency,
-            and much more
+            app, adjust the temperature, camera&apos;s view, Air conditions
+            control, curtain closure, lighting density and colours, energy
+            efficiency, and much more
           </p>
         </div>
         <div className="w-1/2">
@@ -76,3 +75,5 @@ export const About = () => {
     </>
   );
 };
+
+export default About;

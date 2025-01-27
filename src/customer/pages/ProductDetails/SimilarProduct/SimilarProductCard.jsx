@@ -1,5 +1,6 @@
 import VisibilityIcon from "@mui/icons-material/Visibility";
-function DealCard() {
+
+function SimilarProductCard() {
   return (
     <div className="w-full px-3 group">
       <div className="w-[14rem] mx-auto bg-white shadow-lg rounded-lg overflow-hidden relative group-hover:shadow-2xl group-hover:-translate-y-2 duration-300">
@@ -44,4 +45,4 @@ function DealCard() {
   );
 }
 
-export default DealCard;
+export default SimilarProductCard;

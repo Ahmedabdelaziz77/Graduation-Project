@@ -3,7 +3,6 @@ import { Typography } from "@mui/material";
 import Arrows from "./Arrows";
 
 function SliderSection({ products }) {
-  console.log(products);
   const settings = {
     dots: true,
     infinite: true,
