@@ -1,6 +1,7 @@
 import Slider from "react-slick";
 import { Typography } from "@mui/material";
 import Arrows from "./Arrows";
+import { useNavigate } from "react-router-dom";
 
 function SliderSection({ products }) {
   const settings = {
@@ -16,13 +17,15 @@ function SliderSection({ products }) {
       { breakpoint: 480, settings: { slidesToShow: 1 } },
     ],
   };
-
+  const navigate = useNavigate();
   return (
     <Slider {...settings} className="px-5 py-5">
       {products.map((product, index) => (
-        <div key={index} className="text-center">
-          <div className="flex justify-center items-center h-[120px] mb-5">
+        <div key={index} className="text-center ">
+          <div className="flex justify-center items-center h-[120px] mb-5 ">
             <img
+              className="cursor-pointer"
+              onClick={() => navigate(`/product-details/1/camera/2`)}
               src={product.image}
               alt={product.name}
               style={{

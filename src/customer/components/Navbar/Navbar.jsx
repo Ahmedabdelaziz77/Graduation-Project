@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
 import {
   Search as SearchIcon,
   FavoriteBorder,
@@ -9,6 +9,7 @@ import {
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import SliderSection from "./SliderSection";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
   const categories = [
@@ -98,7 +99,8 @@ function Navbar() {
       ],
     },
   ];
-
+  const isLoggedin = true;
+  const navigate = useNavigate();
   const [hovering, setHovering] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState(categories[0]);
   let hoverTimeout;
@@ -120,7 +122,10 @@ function Navbar() {
       {/* Navbar Header */}
       <div className="flex items-center justify-between px-5 lg:px-20 h-[70px] border-b">
         <div className="flex items-center gap-9">
-          <h1 className="logo cursor-pointer text-lg md:text-2xl text-primary-color">
+          <h1
+            onClick={() => navigate("/")}
+            className="logo cursor-pointer text-lg md:text-2xl text-primary-color"
+          >
             EZsmart
           </h1>
           <ul className="flex items-center font-medium text-gray-800 cursor-pointer">
@@ -145,11 +150,26 @@ function Navbar() {
           <IconButton>
             <SearchIcon />
           </IconButton>
-          <Button variant="contained">Login</Button>
+
+          {isLoggedin ? (
+            <Button
+              onClick={() => navigate("/account/orders")}
+              className="flex items-center gap-2"
+            >
+              <Avatar
+                sx={{ width: 29, height: 29 }}
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFU7U2h0umyF0P6E_yhTX45sGgPEQAbGaJ4g&s"
+              />
+              <h1 className="font-semibold hidden lg:block">ELZOZ</h1>
+            </Button>
+          ) : (
+            <Button variant="contained">Login</Button>
+          )}
+
           <IconButton>
             <FavoriteBorder sx={{ fontSize: 29 }} />
           </IconButton>
-          <IconButton>
+          <IconButton onClick={() => navigate("/cart")}>
             <AddShoppingCart className="text-gray-700" sx={{ fontSize: 29 }} />
           </IconButton>
           <Button startIcon={<Storefront />} variant="outlined">
@@ -189,6 +209,7 @@ function Navbar() {
                       : ""
                   }`}
                   onMouseEnter={() => handleMouseEnter(category)}
+                  onClick={() => navigate(`/products/${category.name}`)}
                 >
                   {category.name}
                 </Typography>
