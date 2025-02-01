@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 function Customize() {
   return (
     <div className="flex items-center justify-between bg-gray-100 py-10 lg:py-24 lg:px-40 ">
@@ -23,12 +21,9 @@ function Customize() {
           door lock, security camera, smart sensors, PDLC smart film switchable
           glass, and much more.
         </p>
-        <Link
-          to={"/offerCustomize"}
-          className="font-lora bg-black text-white py-2 px-6 rounded-md text-lg hover:bg-white hover:text-black border border-black transition-all duration-300"
-        >
+        <button className="font-lora bg-black text-white py-2 px-6 rounded-md text-lg hover:bg-white hover:text-black border border-black transition-all duration-300">
           Customize
-        </Link>
+        </button>
       </div>
     </div>
   );

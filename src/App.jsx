@@ -9,7 +9,6 @@ import Cart from "./customer/pages/Cart/Cart";
 import Checkout from "./customer/pages/Checkout/Checkout";
 import Account from "./customer/pages/Account/Account";
 import { Route, Routes } from "react-router-dom";
-import { OfferCustomize } from "./customer/pages/Home/offerCustomize/OfferCustomize";
 
 function App() {
   return (
@@ -18,7 +17,7 @@ function App() {
         {/* <Navbar /> */}
         {/* <Home /> */}
         {/* <Product /> */}
-        {/* <ProductDetails /> */} 
+        {/* <ProductDetails /> */}
         {/* <Review /> */}
         {/* <Cart /> */}
         {/* <Checkout /> */}
@@ -36,7 +35,6 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/account/*" element={<Account />} />
           <Route path="/" element={<Home />} />
-          <Route path="/offerCustomize" element={<OfferCustomize />} />
         </Routes>
       </div>
     </ThemeProvider>
