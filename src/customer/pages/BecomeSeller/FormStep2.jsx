@@ -3,7 +3,7 @@ import AddressTextFields from "../Checkout/AddressTextFields";
 function FormStep2({ formik }) {
   return (
     <Box>
-      <Grid2 container spacing={3}>
+      <Grid2 container spacing={1}>
         {/* name */}
         <AddressTextFields
           name="pickupAddress.name"
