@@ -11,19 +11,11 @@ import Account from "./customer/pages/Account/Account";
 import { Route, Routes } from "react-router-dom";
 import BecomeSeller from "./customer/pages/BecomeSeller/BecomeSeller";
 import SellerDashboard from "./seller/pages/SellerDashboard/SellerDashboard";
-
+import AdminDashboard from "./admin/pages/Dashboard/AdminDashboard";
 function App() {
   return (
     <ThemeProvider theme={customTheme}>
       <div>
-        {/* <Navbar /> */}
-        {/* <Home /> */}
-        {/* <Product /> */}
-        {/* <ProductDetails /> */}
-        {/* <Review /> */}
-        {/* <Cart /> */}
-        {/* <Checkout /> */}
-        {/* <Account /> */}
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -38,6 +30,7 @@ function App() {
           <Route path="/account/*" element={<Account />} />
           <Route path="/become-seller" element={<BecomeSeller />} />
           <Route path="/seller/*" element={<SellerDashboard />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
         </Routes>
       </div>
     </ThemeProvider>
