@@ -9,8 +9,11 @@ import Cart from "./customer/pages/Cart/Cart";
 import Checkout from "./customer/pages/Checkout/Checkout";
 import Account from "./customer/pages/Account/Account";
 import { Route, Routes } from "react-router-dom";
-import { OfferCustomize } from "./customer/pages/Home/offerCustomize/OfferCustomize";
 
+import OfferCustomize from "./customer/pages/offerCustomize/OfferCustomize";
+import  SmartApp  from "./customer/pages/offerCustomize/SmartApp";
+import LastPageCustomize from './customer/pages/offerCustomize/LastPageCustomize'
+import Appointment from "./customer/pages/Appointment/Appointment";
 function App() {
   return (
     <ThemeProvider theme={customTheme}>
@@ -18,7 +21,7 @@ function App() {
         {/* <Navbar /> */}
         {/* <Home /> */}
         {/* <Product /> */}
-        {/* <ProductDetails /> */} 
+        {/* <ProductDetails /> */}
         {/* <Review /> */}
         {/* <Cart /> */}
         {/* <Checkout /> */}
@@ -37,6 +40,9 @@ function App() {
           <Route path="/account/*" element={<Account />} />
           <Route path="/" element={<Home />} />
           <Route path="/offerCustomize" element={<OfferCustomize />} />
+          <Route path="/smartApp" element={<SmartApp />} />
+          <Route path="/lastPage" element={<LastPageCustomize />} />
+          <Route path="/appointment" element={<Appointment />} />
         </Routes>
       </div>
     </ThemeProvider>

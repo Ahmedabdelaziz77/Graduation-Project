@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Avatar, Box, Button, IconButton, Typography } from "@mui/material";
 import {
   Search as SearchIcon,
