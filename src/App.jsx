@@ -9,15 +9,22 @@ import Cart from "./customer/pages/Cart/Cart";
 import Checkout from "./customer/pages/Checkout/Checkout";
 import Account from "./customer/pages/Account/Account";
 import { Route, Routes } from "react-router-dom";
+<<<<<<< HEAD
 
 import OfferCustomize from "./customer/pages/offerCustomize/OfferCustomize";
 import  SmartApp  from "./customer/pages/offerCustomize/SmartApp";
 import LastPageCustomize from './customer/pages/offerCustomize/LastPageCustomize'
 import Appointment from "./customer/pages/Appointment/Appointment";
+=======
+import BecomeSeller from "./customer/pages/BecomeSeller/BecomeSeller";
+import SellerDashboard from "./seller/pages/SellerDashboard/SellerDashboard";
+import AdminDashboard from "./admin/pages/Dashboard/AdminDashboard";
+>>>>>>> c7917ec671ed3941e04e987740b5d22887024527
 function App() {
   return (
     <ThemeProvider theme={customTheme}>
       <div>
+<<<<<<< HEAD
         {/* <Navbar /> */}
         {/* <Home /> */}
         {/* <Product /> */}
@@ -26,6 +33,8 @@ function App() {
         {/* <Cart /> */}
         {/* <Checkout /> */}
         {/* <Account /> */}
+=======
+>>>>>>> c7917ec671ed3941e04e987740b5d22887024527
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -38,11 +47,17 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/account/*" element={<Account />} />
+<<<<<<< HEAD
           <Route path="/" element={<Home />} />
           <Route path="/offerCustomize" element={<OfferCustomize />} />
           <Route path="/smartApp" element={<SmartApp />} />
           <Route path="/lastPage" element={<LastPageCustomize />} />
           <Route path="/appointment" element={<Appointment />} />
+=======
+          <Route path="/become-seller" element={<BecomeSeller />} />
+          <Route path="/seller/*" element={<SellerDashboard />} />
+          <Route path="/admin/*" element={<AdminDashboard />} />
+>>>>>>> c7917ec671ed3941e04e987740b5d22887024527
         </Routes>
       </div>
     </ThemeProvider>

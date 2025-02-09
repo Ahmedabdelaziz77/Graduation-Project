@@ -15,7 +15,12 @@
     "@mui/icons-material": "^6.4.0",
     "@mui/material": "^6.4.0",
     "@mui/styled-engine-sc": "^6.4.0",
+<<<<<<< HEAD
     "date-fns": "^4.1.0",
+=======
+    "@mui/x-date-pickers": "^7.25.0",
+    "dayjs": "^1.11.13",
+>>>>>>> c7917ec671ed3941e04e987740b5d22887024527
     "ezsmart": "file:",
     "formik": "^2.4.6",
     "react": "^18.3.1",
