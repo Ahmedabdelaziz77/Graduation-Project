@@ -13,8 +13,6 @@ const ButtonNext = ({ setNumberPage }) => {
           Next
         </Link>
       </div>
-
-
     </div>
   );
 };

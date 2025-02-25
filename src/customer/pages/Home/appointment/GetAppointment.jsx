@@ -46,9 +46,7 @@ function GetAppointment() {
               Do you want to add another service to this appointment?
             </p>
 
-            <button
-              className="btn text-2xl border-2 px-32 py-3"
-            >
+            <button className="btn text-2xl border-2 px-32 py-3">
               +
               <span className="ml-2 decoration hover:decoration-1 hover:underline transition duration-500 ease-in-out">
                 {" "}

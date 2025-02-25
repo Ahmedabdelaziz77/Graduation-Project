@@ -47,59 +47,131 @@ function Navbar() {
     {
       name: "home security & sensors",
       products: [
-        { name: "Shirt", image: "https://via.placeholder.com/100" },
-        { name: "Jeans", image: "https://via.placeholder.com/100" },
-        { name: "Shoes", image: "https://via.placeholder.com/100" },
-        { name: "Hat", image: "https://via.placeholder.com/100" },
+        {
+          name: "Shirt",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Jeans",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Shoes",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Hat",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
       ],
     },
     {
       name: "thremostats",
       products: [
-        { name: "Microwave", image: "https://via.placeholder.com/100" },
-        { name: "Refrigerator", image: "https://via.placeholder.com/100" },
-        { name: "Air Conditioner", image: "https://via.placeholder.com/100" },
-        { name: "Vacuum Cleaner", image: "https://via.placeholder.com/100" },
+        {
+          name: "Microwave",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Refrigerator",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Air Conditioner",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Vacuum Cleaner",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
       ],
     },
     {
       name: "control panel",
       products: [
-        { name: "Fiction", image: "https://via.placeholder.com/100" },
-        { name: "Non-fiction", image: "https://via.placeholder.com/100" },
-        { name: "Science", image: "https://via.placeholder.com/100" },
-        { name: "Fantasy", image: "https://via.placeholder.com/100" },
+        {
+          name: "Fiction",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Non-fiction",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Science",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Fantasy",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
       ],
     },
     {
       name: "control ",
       products: [
-        { name: "Fiction", image: "https://via.placeholder.com/100" },
-        { name: "Non-fiction", image: "https://via.placeholder.com/100" },
-        { name: "Science", image: "https://via.placeholder.com/100" },
-        { name: "Fantasy", image: "https://via.placeholder.com/100" },
+        {
+          name: "Fiction",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Non-fiction",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Science",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Fantasy",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
       ],
     },
     {
       name: "control pane",
       products: [
-        { name: "Fiction", image: "https://via.placeholder.com/100" },
-        { name: "Non-fiction", image: "https://via.placeholder.com/100" },
-        { name: "Science", image: "https://via.placeholder.com/100" },
-        { name: "Fantasy", image: "https://via.placeholder.com/100" },
+        {
+          name: "Fiction",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Non-fiction",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Science",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Fantasy",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
       ],
     },
     {
       name: "control pnel",
       products: [
-        { name: "Fiction", image: "https://via.placeholder.com/100" },
-        { name: "Non-fiction", image: "https://via.placeholder.com/100" },
-        { name: "Science", image: "https://via.placeholder.com/100" },
-        { name: "Fantasy", image: "https://via.placeholder.com/100" },
+        {
+          name: "Fiction",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Non-fiction",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Science",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
+        {
+          name: "Fantasy",
+          image: "/public/category photos/2-home security & sensors.png",
+        },
       ],
     },
   ];
-  const isLoggedin = true;
+  const isLoggedin = false;
   const navigate = useNavigate();
   const [hovering, setHovering] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState(categories[0]);

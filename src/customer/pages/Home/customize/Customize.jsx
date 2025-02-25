@@ -1,4 +1,7 @@
+import { useNavigate } from "react-router-dom";
+
 function Customize() {
+  const navigate = useNavigate();
   return (
     <div className="flex items-center justify-between bg-gray-100 py-10 lg:py-24 lg:px-40 ">
       <div className="w-full lg:w-1/3 hidden lg:block">
@@ -21,7 +24,10 @@ function Customize() {
           door lock, security camera, smart sensors, PDLC smart film switchable
           glass, and much more.
         </p>
-        <button className="font-lora bg-black text-white py-2 px-6 rounded-md text-lg hover:bg-white hover:text-black border border-black transition-all duration-300">
+        <button
+          onClick={() => navigate("/offerCustomize")}
+          className="font-lora bg-black text-white py-2 px-6 rounded-md text-lg hover:bg-white hover:text-black border border-black transition-all duration-300"
+        >
           Customize
         </button>
       </div>

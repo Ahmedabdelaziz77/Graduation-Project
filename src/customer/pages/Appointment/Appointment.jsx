@@ -23,7 +23,7 @@ const Appointment = () => {
         </div>
         <div className="w-2/6 font-bold text-2xl border-b-2 text-center pb-5">
           <h2 className="">Booking Details</h2>
-        </div>{" "}
+        </div>
       </div>
     </div>
   );
