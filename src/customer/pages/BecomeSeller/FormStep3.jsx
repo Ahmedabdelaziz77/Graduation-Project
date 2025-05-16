@@ -21,18 +21,18 @@ function FormStep3({ formik }) {
       />
       <TextField
         fullWidth
-        name="bankDetails.ifscCode"
-        label="IFSC Code"
-        value={formik.values.bankDetails?.ifscCode}
+        name="bankDetails.SWIFTCode"
+        label="SWIFT Code"
+        value={formik.values.bankDetails?.SWIFTCode}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
         error={
-          formik.touched.bankDetails?.ifscCode &&
-          Boolean(formik.errors.bankDetails?.ifscCode)
+          formik.touched.bankDetails?.SWIFTCode &&
+          Boolean(formik.errors.bankDetails?.SWIFTCode)
         }
         helperText={
-          formik.touched.bankDetails?.ifscCode &&
-          formik.errors.bankDetails?.ifscCode
+          formik.touched.bankDetails?.SWIFTCode &&
+          formik.errors.bankDetails?.SWIFTCode
         }
       />
       <TextField

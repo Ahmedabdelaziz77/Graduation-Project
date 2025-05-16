@@ -39,7 +39,7 @@ function FormStep4({ formik }) {
         error={formik.touched.email && Boolean(formik.errors.email)}
         helperText={formik.touched.email && formik.errors.email}
       />
-      <TextField
+      {/* <TextField
         fullWidth
         name="password"
         label="Password"
@@ -48,7 +48,7 @@ function FormStep4({ formik }) {
         onBlur={formik.handleBlur}
         error={formik.touched.password && Boolean(formik.errors.password)}
         helperText={formik.touched.password && formik.errors.password}
-      />
+      /> */}
     </div>
   );
 }

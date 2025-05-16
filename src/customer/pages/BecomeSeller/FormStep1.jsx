@@ -17,13 +17,13 @@ function FormStep1({ formik }) {
         />
         <TextField
           fullWidth
-          name="GSTIN"
-          label="GSTIN"
-          value={formik.values.GSTIN}
+          name="TIN"
+          label="TIN"
+          value={formik.values.TIN}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
-          error={formik.touched.GSTIN && Boolean(formik.errors.GSTIN)}
-          helperText={formik.touched.GSTIN && formik.errors.GSTIN}
+          error={formik.touched.TIN && Boolean(formik.errors.TIN)}
+          helperText={formik.touched.TIN && formik.errors.TIN}
         />
       </div>
     </Box>

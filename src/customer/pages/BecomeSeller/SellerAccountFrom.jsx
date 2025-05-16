@@ -26,7 +26,9 @@ function SellerAccountFrom() {
     initialValues: {
       mobile: "",
       otp: "",
-      GSTIN: "",
+      // It is issued by the Egyptian Tax Authority and is required for tax filing and compliance.
+      // Format: Usually 9 to 15 digits, assigned to individuals and businesses for tax purposes.
+      TIN: "",
       pickupAddress: {
         name: "",
         mobile: "",
@@ -37,7 +39,8 @@ function SellerAccountFrom() {
       },
       bankDetails: {
         accountNumber: "",
-        ifscCode: "",
+        // Egyptian banks use the SWIFT Code (Society for Worldwide Interbank Financial Telecommunication Code) for international and domestic bank transactions.
+        SWIFTCode: "",
         accountHolderName: "",
       },
       sellerName: "",
@@ -50,13 +53,11 @@ function SellerAccountFrom() {
         logo: "",
         banner: "",
       },
-      password: "",
     },
     onSubmit: (values) => {
       console.log(values);
     },
   });
-  console.log(formik.values);
   return (
     <div>
       <Stepper activeStep={activeStep} alternativeLabel>

@@ -1,7 +1,10 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
 import { thunk } from "redux-thunk";
-const rootReducer = combineReducers({});
+import sellerSlice from "./seller/sellerSlice";
+const rootReducer = combineReducers({
+  seller: sellerSlice,
+});
 const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleWare) => getDefaultMiddleWare().concat(thunk),

@@ -17,20 +17,18 @@ import Appointment from "./customer/pages/Appointment/Appointment";
 import BecomeSeller from "./customer/pages/BecomeSeller/BecomeSeller";
 import SellerDashboard from "./seller/pages/SellerDashboard/SellerDashboard";
 import AdminDashboard from "./admin/pages/Dashboard/AdminDashboard";
+import { useEffect } from "react";
+import { fetchProducts } from "./State/fetchProduct";
+import { useAppDispatch } from "./State/Store";
 
 function App() {
+  // const dispatch = useAppDispatch();
+  // useEffect(() => {
+  //   fetchProducts();
+  // }, []);
   return (
     <ThemeProvider theme={customTheme}>
       <div>
-        {/* <Navbar /> */}
-        {/* <Home /> */}
-        {/* <Product /> */}
-        {/* <ProductDetails /> */}
-        {/* <Review /> */}
-        {/* <Cart /> */}
-        {/* <Checkout /> */}
-        {/* <Account /> */}
-
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
