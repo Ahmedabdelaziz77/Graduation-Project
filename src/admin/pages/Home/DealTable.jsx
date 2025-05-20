@@ -1,5 +1,4 @@
-import { Button, IconButton } from "@mui/material";
-
+import { IconButton } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -12,8 +11,9 @@ import { Delete, Edit } from "@mui/icons-material";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
+    backgroundColor: theme.palette.primary.main,
     color: theme.palette.common.white,
+    fontWeight: "bold",
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
@@ -24,54 +24,51 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
   },
 }));
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
+function createData(no, image, category, discount) {
+  return { no, image, category, discount };
 }
 
 const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
+  createData(1, "📦", "Electronics", "15%"),
+  createData(2, "📦", "Fashion", "20%"),
+  createData(3, "📦", "Home", "25%"),
+  createData(4, "📦", "Books", "10%"),
 ];
+
 function DealTable() {
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 700 }} aria-label="customized table">
+    <TableContainer component={Paper} sx={{ mt: 2 }}>
+      <Table sx={{ minWidth: 900 }} aria-label="deal table">
         <TableHead>
           <TableRow>
             <StyledTableCell>No</StyledTableCell>
             <StyledTableCell>Image</StyledTableCell>
             <StyledTableCell>Category</StyledTableCell>
-            <StyledTableCell align="right">Discount</StyledTableCell>
-            <StyledTableCell align="right">Update</StyledTableCell>
-            <StyledTableCell align="right">Delete</StyledTableCell>
+            <StyledTableCell>Discount</StyledTableCell>
+            <StyledTableCell align="center">Update</StyledTableCell>
+            <StyledTableCell align="center">Delete</StyledTableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {rows.map((row) => (
-            <StyledTableRow key={row.name}>
-              <StyledTableCell component="th" scope="row">
-                {row.name}
-              </StyledTableCell>
-              <StyledTableCell>{row.calories}</StyledTableCell>
-              <StyledTableCell>{row.fat}</StyledTableCell>
-              <StyledTableCell align="right">{row.carbs}</StyledTableCell>
-              <StyledTableCell align="right">
-                <Button>
+            <StyledTableRow key={row.no}>
+              <StyledTableCell>{row.no}</StyledTableCell>
+              <StyledTableCell>{row.image}</StyledTableCell>
+              <StyledTableCell>{row.category}</StyledTableCell>
+              <StyledTableCell>{row.discount}</StyledTableCell>
+              <StyledTableCell align="center">
+                <IconButton color="primary">
                   <Edit />
-                </Button>
+                </IconButton>
               </StyledTableCell>
-              <StyledTableCell align="right">
-                <IconButton>
-                  <Delete sx={{ color: "red" }} />
+              <StyledTableCell align="center">
+                <IconButton color="error">
+                  <Delete />
                 </IconButton>
               </StyledTableCell>
             </StyledTableRow>

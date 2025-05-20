@@ -1,6 +1,5 @@
 import { Category, LocalOffer } from "@mui/icons-material";
 import DrawerList from "../../components/DrawerList";
-import AccountBoxIcon from "@mui/icons-material/AccountBox";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AddIcon from "@mui/icons-material/Add";
 import IntegrationInstructionsIcon from "@mui/icons-material/IntegrationInstructions";
@@ -52,12 +51,6 @@ const menu = [
   },
 ];
 const menu2 = [
-  {
-    name: "Account",
-    path: "/admin/account",
-    icon: <AccountBoxIcon className="text-primary-color" />,
-    activeIcon: <AccountBoxIcon className="text-white" />,
-  },
   {
     name: "Logout",
     path: "/",

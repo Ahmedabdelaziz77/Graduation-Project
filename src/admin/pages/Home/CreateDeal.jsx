@@ -1,4 +1,3 @@
-import { Category } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -21,41 +20,55 @@ function CreateDeal() {
       console.log(values);
     },
   });
+
   return (
     <Box
-      component={"form"}
+      component="form"
       onSubmit={formik.handleSubmit}
-      className="space-y-6"
+      sx={{
+        width: "100%",
+        maxWidth: 500,
+        mx: "auto",
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+        mt: 4,
+      }}
     >
-      <Typography variant="h4" className="text-center">
+      <Typography variant="h5" align="center" fontWeight="bold" color="primary">
         Create Deal
       </Typography>
+
       <TextField
         fullWidth
         name="discount"
-        label="Discount"
+        label="Discount (%)"
+        type="number"
         value={formik.values.discount}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
         error={formik.touched.discount && Boolean(formik.errors.discount)}
         helperText={formik.touched.discount && formik.errors.discount}
       />
+
       <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Category</InputLabel>
+        <InputLabel id="category-label">Category</InputLabel>
         <Select
-          labelId="demo-simple-select-label"
-          id="demo-simple-select"
-          value={formik.values.category}
+          labelId="category-label"
+          name="category"
           label="Category"
+          value={formik.values.category}
           onChange={formik.handleChange}
         >
-          <MenuItem value={10}>Ten</MenuItem>
-          <MenuItem value={20}>Twenty</MenuItem>
-          <MenuItem value={30}>Thirty</MenuItem>
+          <MenuItem value="">Select a category</MenuItem>
+          <MenuItem value="electronics">Electronics</MenuItem>
+          <MenuItem value="fashion">Fashion</MenuItem>
+          <MenuItem value="home">Home</MenuItem>
         </Select>
       </FormControl>
-      <Button fullWidth sx={{ py: ".9rem" }} type="submit" variant="contained">
-        create deal
+
+      <Button type="submit" variant="contained" fullWidth sx={{ py: 1.2 }}>
+        Create Deal
       </Button>
     </Box>
   );

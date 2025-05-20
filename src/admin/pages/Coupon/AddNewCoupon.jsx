@@ -1,51 +1,68 @@
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { useFormik } from "formik";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { Box, Button, Grid2, TextField } from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Grid,
+  Container,
+} from "@mui/material";
 
 function AddNewCoupon() {
   const formik = useFormik({
     initialValues: {
       code: "",
-      discountPercentage: 0,
+      discountPercentage: "",
       validityStartDate: null,
       validityEndDate: null,
-      minimumOrderValue: 0,
+      minimumOrderValue: "",
     },
     onSubmit: (values) => {
-      const formatedValues = {
+      const formattedValues = {
         ...values,
         validityStartDate: values.validityStartDate?.toISOString(),
         validityEndDate: values.validityEndDate?.toISOString(),
       };
-      console.log(formatedValues);
+      console.log("Submitted:", formattedValues);
     },
   });
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-center text-primary-color pb-5">
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Typography
+        variant="h5"
+        align="center"
+        fontWeight="bold"
+        color="primary"
+        gutterBottom
+      >
         Create New Coupon
-      </h1>
+      </Typography>
+
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Box component={"form"} onSubmit={formik.handleSubmit} sx={{ mt: 3 }}>
-          <Grid2 container spacing={2}>
-            <Grid2 size={{ xs: 12, sm: 6 }}>
+        <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 3 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                name="code"
                 label="Coupon Code"
+                name="code"
                 value={formik.values.code}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 error={formik.touched.code && Boolean(formik.errors.code)}
                 helperText={formik.touched.code && formik.errors.code}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6 }}>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
-                name="discountPercentage"
                 label="Discount Percentage"
+                name="discountPercentage"
+                type="number"
                 value={formik.values.discountPercentage}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -58,30 +75,36 @@ function AddNewCoupon() {
                   formik.errors.discountPercentage
                 }
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6 }}>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
               <DatePicker
-                sx={{ width: "100%" }}
-                label="Validity Start Date"
-                name="validityStartDate"
+                label="Start Date"
                 value={formik.values.validityStartDate}
-                onChange={formik.handleChange}
+                onChange={(value) =>
+                  formik.setFieldValue("validityStartDate", value)
+                }
+                slotProps={{ textField: { fullWidth: true } }}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12, sm: 6 }}>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
               <DatePicker
-                sx={{ width: "100%" }}
-                label="Validity END Date"
-                name="validityEndDate"
+                label="End Date"
                 value={formik.values.validityEndDate}
-                onChange={formik.handleChange}
+                onChange={(value) =>
+                  formik.setFieldValue("validityEndDate", value)
+                }
+                slotProps={{ textField: { fullWidth: true } }}
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12 }}>
+            </Grid>
+
+            <Grid item xs={12}>
               <TextField
                 fullWidth
-                name="minimumOrderValue"
                 label="Minimum Order Value"
+                name="minimumOrderValue"
+                type="number"
                 value={formik.values.minimumOrderValue}
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
@@ -94,16 +117,22 @@ function AddNewCoupon() {
                   formik.errors.minimumOrderValue
                 }
               />
-            </Grid2>
-            <Grid2 size={{ xs: 12 }}>
-              <Button variant="contained" fullWidth sx={{ py: ".8rem" }}>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                sx={{ py: 1.5 }}
+              >
                 Create Coupon
               </Button>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </Box>
       </LocalizationProvider>
-    </div>
+    </Container>
   );
 }
 

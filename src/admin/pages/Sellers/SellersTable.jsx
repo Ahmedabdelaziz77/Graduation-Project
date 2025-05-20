@@ -1,147 +1,185 @@
 import {
+  Box,
   Button,
   FormControl,
   InputLabel,
   MenuItem,
+  Paper,
   Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
-import { useState } from "react";
 import { styled } from "@mui/material/styles";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell, { tableCellClasses } from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
+import { useState } from "react";
+import { tableCellClasses } from "@mui/material/TableCell";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
-    backgroundColor: theme.palette.common.black,
+    backgroundColor: theme.palette.primary.main,
     color: theme.palette.common.white,
+    fontWeight: "bold",
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
   },
 }));
-
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
   },
 }));
 
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-];
 const accountStatuses = [
+  { status: "PENDING_VERIFICATION", title: "Pending Verification" },
+  { status: "ACTIVE", title: "Active" },
+  { status: "SUSPENDED", title: "Suspended" },
+  { status: "DEACTIVATED", title: "Deactivated" },
+  { status: "BANNED", title: "Banned" },
+  { status: "CLOSED", title: "Closed" },
+];
+
+const initialRows = [
   {
-    status: "PENDING_VERIFICATION",
-    title: "Pending Verification",
-    description:
-      "The account is awaiting verification. The user has signed up but has not yet completed the required verification steps (e.g., email or phone verification).",
-  },
-  {
+    name: "Alice Johnson",
+    email: "alice@email.com",
+    mobile: "1234567890",
+    gstin: "22AABCF1234F1Z5",
+    business: "Alice Co.",
     status: "ACTIVE",
-    title: "Active",
-    description:
-      "The account is fully verified and active. The user can access all features and services associated with their account.",
   },
   {
+    name: "Bob Smith",
+    email: "bob@email.com",
+    mobile: "9876543210",
+    gstin: "19BBBCF4321F2X8",
+    business: "Bob Ltd.",
     status: "SUSPENDED",
-    title: "Suspended",
-    description:
-      "The account has been temporarily suspended due to a violation of terms of service or suspicious activity. The user cannot access their account during this period.",
   },
   {
-    status: "DEACTIVATED",
-    title: "Deactivated",
-    description:
-      "The account has been deactivated by the user or the system. It is no longer accessible, but the data may still be retained for a certain period.",
-  },
-  {
-    status: "BANNED",
-    title: "Banned",
-    description:
-      "The account has been permanently banned due to severe violations of terms of service. The user can no longer access the account or create new accounts.",
-  },
-  {
-    status: "CLOSED",
-    title: "Closed",
-    description:
-      "The account has been permanently closed, either by the user or the system. All associated data may be deleted or anonymized.",
+    name: "Clara Adams",
+    email: "clara@email.com",
+    mobile: "1122334455",
+    gstin: "27CCCCF5678F3Y2",
+    business: "Clara Ventures",
+    status: "PENDING_VERIFICATION",
   },
 ];
+
 function SellersTable() {
-  const [accountStatus, setAccountStatus] = useState("ACTIVE");
-  const handleChange = (e) => {
+  const [rows, setRows] = useState(initialRows);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [accountStatus, setAccountStatus] = useState("ALL");
+
+  const handleChangeStatusFilter = (e) => {
     setAccountStatus(e.target.value);
   };
+
+  const handleStatusChange = (index, newStatus) => {
+    const updated = [...rows];
+    updated[index].status = newStatus;
+    setRows(updated);
+    setEditingIndex(null);
+  };
+
+  const filteredRows =
+    accountStatus === "ALL"
+      ? rows
+      : rows.filter((row) => row.status === accountStatus);
+
   return (
-    <>
-      <div className="pb-5 w-60">
+    <Box sx={{ mt: 3 }}>
+      <Box sx={{ width: 250, mb: 3 }}>
         <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">Account Status</InputLabel>
+          <InputLabel id="filter-label">Account Status</InputLabel>
           <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
+            labelId="filter-label"
             value={accountStatus}
             label="Account Status"
-            onChange={handleChange}
+            onChange={handleChangeStatusFilter}
           >
+            <MenuItem value="ALL">All</MenuItem>
             {accountStatuses.map((item) => (
-              <MenuItem key={item} value={item.status}>
+              <MenuItem key={item.status} value={item.status}>
                 {item.title}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-      </div>
+      </Box>
+
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 700 }} aria-label="customized table">
+        <Table sx={{ minWidth: 900 }} aria-label="sellers table">
           <TableHead>
             <TableRow>
               <StyledTableCell>Seller Name</StyledTableCell>
               <StyledTableCell>Email</StyledTableCell>
               <StyledTableCell align="right">Mobile</StyledTableCell>
               <StyledTableCell align="right">GSTIN</StyledTableCell>
-              <StyledTableCell align="right">Business Name</StyledTableCell>
+              <StyledTableCell align="right">Business</StyledTableCell>
               <StyledTableCell align="right">Account Status</StyledTableCell>
-              <StyledTableCell align="right">Change Status</StyledTableCell>
+              <StyledTableCell align="center">Change Status</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
-              <StyledTableRow key={row.name}>
-                <StyledTableCell component="th" scope="row">
-                  {row.name}
-                </StyledTableCell>
-                <StyledTableCell>{row.calories}</StyledTableCell>
-                <StyledTableCell align="right">{row.fat}</StyledTableCell>
-                <StyledTableCell align="right">{row.carbs}</StyledTableCell>
-                <StyledTableCell align="right">{row.protein}</StyledTableCell>
-                <StyledTableCell align="right">{row.carbs}</StyledTableCell>
-                <StyledTableCell align="right">
-                  <Button>Change</Button>
-                </StyledTableCell>
-              </StyledTableRow>
-            ))}
+            {filteredRows.map((row) => {
+              const rowIndex = rows.findIndex((r) => r.name === row.name);
+              return (
+                <StyledTableRow key={row.name}>
+                  <StyledTableCell>{row.name}</StyledTableCell>
+                  <StyledTableCell>{row.email}</StyledTableCell>
+                  <StyledTableCell align="right">{row.mobile}</StyledTableCell>
+                  <StyledTableCell align="right">{row.gstin}</StyledTableCell>
+                  <StyledTableCell align="right">
+                    {row.business}
+                  </StyledTableCell>
+                  <StyledTableCell align="right">{row.status}</StyledTableCell>
+                  <StyledTableCell align="center">
+                    <Box sx={{ width: 120, height: 35, mx: "auto" }}>
+                      {editingIndex === rowIndex ? (
+                        <FormControl size="small" fullWidth>
+                          <Select
+                            value={row.status}
+                            onChange={(e) =>
+                              handleStatusChange(rowIndex, e.target.value)
+                            }
+                            autoFocus
+                          >
+                            {accountStatuses.map((status) => (
+                              <MenuItem
+                                key={status.status}
+                                value={status.status}
+                              >
+                                {status.title}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      ) : (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          fullWidth
+                          onClick={() => setEditingIndex(rowIndex)}
+                        >
+                          Change
+                        </Button>
+                      )}
+                    </Box>
+                  </StyledTableCell>
+                </StyledTableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>
-    </>
+    </Box>
   );
 }
 
