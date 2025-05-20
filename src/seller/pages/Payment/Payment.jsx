@@ -1,22 +1,42 @@
-import { Button, Card, Divider } from "@mui/material";
+import { Box, Card, Divider, Typography } from "@mui/material";
 import Transaction from "./Transaction";
 
 function Payment() {
   return (
-    <div className="space-y-5">
-      <Card className="rounded-md space-y-4 p-5">
-        <h1 className="text-gray-600 font-medium">Total Earning</h1>
-        <h1 className="font-bold text-xl pb-1">E£12230</h1>
+    <Box className="space-y-6">
+      {/* Earnings Summary */}
+      <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
+        <Typography variant="subtitle1" color="text.secondary" fontWeight={500}>
+          Total Earnings
+        </Typography>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
+          E£12,230
+        </Typography>
+
         <Divider />
-        <p className="text-gray-600 font-medium pt-1">
-          Last Payment : <strong>E£0</strong>
-        </p>
+
+        <Typography variant="body2" color="text.secondary" sx={{ pt: 2 }}>
+          Last Payment:&nbsp;
+          <Typography
+            component="span"
+            variant="body2"
+            fontWeight="600"
+            color="text.primary"
+          >
+            E£0
+          </Typography>
+        </Typography>
       </Card>
-      <div className="pt-20 space-y-3">
-        <Button variant="contained">Transaction</Button>
+
+      {/* Transaction Section */}
+      <Box sx={{ pt: 8 }}>
+        <Typography variant="h6" fontWeight="bold" gutterBottom>
+          Recent Transactions
+        </Typography>
+
         <Transaction />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

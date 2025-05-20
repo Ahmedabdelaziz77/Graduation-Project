@@ -24,6 +24,7 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -37,172 +38,115 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
+  const kpis = [
+    { title: "Total Sales", value: "$125,400", change: "+12%" },
+    { title: "Orders", value: "1,243", change: "+8%" },
+    { title: "Devices Sold", value: "3,410", change: "+16%" },
+    { title: "Store Visitors", value: "8,900", change: "+5%" },
+  ];
+
   const lineData = {
-    labels: [
-      "plane",
-      "helicopter",
-      "boat",
-      "train",
-      "subway",
-      "bus",
-      "car",
-      "moto",
-      "bicycle",
-      "horse",
-      "skateboard",
-      "others",
-    ],
+    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
     datasets: [
       {
-        label: "US",
-        data: [450, 380, 420, 300, 200, 460, 390, 510, 480, 350, 420, 410],
+        label: "Revenue",
+        data: [1200, 1450, 1300, 1600, 1850, 2000],
         borderColor: "#5eead4",
-        backgroundColor: "transparent",
-        tension: 0.4,
-      },
-      {
-        label: "France",
-        data: [350, 320, 350, 180, 90, 390, 320, 410, 380, 260, 350, 330],
-        borderColor: "#14b8a6",
-        backgroundColor: "transparent",
-        tension: 0.4,
-      },
-      {
-        label: "Japan",
-        data: [150, 100, 130, 90, 40, 160, 120, 180, 150, 110, 130, 140],
-        borderColor: "#0f766e",
         backgroundColor: "transparent",
         tension: 0.4,
       },
     ],
   };
 
+  // Category share
   const doughnutData = {
-    labels: ["Donut", "Fries", "Kebab", "Sandwich", "Burger", "Hot dog"],
+    labels: [
+      "Smart Lights",
+      "Smart Hubs",
+      "Security Cameras",
+      "Plugs",
+      "Sensors",
+    ],
     datasets: [
       {
-        data: [50, 30, 40, 20, 60, 45],
+        data: [35, 25, 20, 10, 10],
         backgroundColor: [
           "#5eead4",
           "#14b8a6",
           "#0f766e",
           "#134e4a",
-          "#22c55e",
           "#22d3ee",
         ],
       },
     ],
   };
 
+  // Product sales bar
   const barData = {
-    labels: ["AD", "AE", "AF", "AG", "AI", "AL", "AM"],
+    labels: ["Lights", "Hubs", "Cameras", "Thermostats", "Plugs"],
     datasets: [
       {
-        label: "Donut",
-        data: [120, 80, 150, 100, 180, 130, 110],
+        label: "Units Sold",
+        data: [850, 650, 500, 300, 450],
         backgroundColor: "#5eead4",
-      },
-      {
-        label: "Fries",
-        data: [90, 70, 120, 80, 140, 100, 90],
-        backgroundColor: "#14b8a6",
-      },
-      {
-        label: "Kebab",
-        data: [60, 50, 80, 50, 100, 70, 60],
-        backgroundColor: "#0f766e",
-      },
-      {
-        label: "Sandwich",
-        data: [50, 40, 70, 40, 90, 60, 50],
-        backgroundColor: "#134e4a",
-      },
-      {
-        label: "Burger",
-        data: [40, 30, 60, 30, 80, 50, 40],
-        backgroundColor: "#22c55e",
-      },
-      {
-        label: "Hot dog",
-        data: [30, 20, 50, 20, 70, 40, 30],
-        backgroundColor: "#22d3ee",
       },
     ],
   };
 
-  const transactions = [
+  // Orders table
+  const orders = [
     {
-      id: "01e4dsa",
-      user: "johndoe",
-      date: "2021-09-01",
-      amount: "$43.95",
+      id: "#ORD1001",
+      customer: "Alice",
+      date: "2025-05-18",
+      product: "Smart Hub",
+      amount: "$89.99",
     },
     {
-      id: "0315dsaa",
-      user: "jackdower",
-      date: "2022-04-01",
-      amount: "$133.45",
+      id: "#ORD1002",
+      customer: "Bob",
+      date: "2025-05-18",
+      product: "Smart Light x2",
+      amount: "$59.98",
     },
     {
-      id: "01e4dsa",
-      user: "aberdohnny",
-      date: "2021-09-01",
-      amount: "$43.95",
+      id: "#ORD1003",
+      customer: "Carol",
+      date: "2025-05-17",
+      product: "Camera Kit",
+      amount: "$129.00",
     },
     {
-      id: "51034szv",
-      user: "exampleuser",
-      date: "2023-11-06",
-      amount: "$63.45",
+      id: "#ORD1004",
+      customer: "David",
+      date: "2025-05-17",
+      product: "Smart Plug",
+      amount: "$19.99",
     },
   ];
 
   return (
-    <Box className="min-h-screen font-sans" sx={{ color: "#d1fae5" }}>
-      <Grid container spacing={3} className="mb-6">
-        {[
-          {
-            title: "Emails Sent",
-            value: "12,361",
-            change: "+4%",
-          },
-          {
-            title: "Sales Obtained",
-            value: "431,225",
-            change: "+21%",
-          },
-          {
-            title: "New Clients",
-            value: "32,441",
-            change: "+5%",
-          },
-          {
-            title: "Traffic Received",
-            value: "1,325,134",
-            change: "+43%",
-          },
-        ].map(({ title, value, change }) => (
+    <Box sx={{ minHeight: "100vh", color: "#d1fae5", p: 3 }}>
+      {/* KPI Cards */}
+      <Grid container spacing={3} mb={4}>
+        {kpis.map(({ title, value, change }) => (
           <Grid item xs={12} sm={6} md={3} key={title}>
-            <Card
-              elevation={3}
-              sx={{
-                bgcolor: "#134e4a",
-                color: "#d1fae5",
-              }}
-            >
+            <Card sx={{ bgcolor: "#134e4a", color: "#d1fae5" }} elevation={3}>
               <CardContent>
                 <Typography variant="subtitle2" sx={{ color: "#81e6d9" }}>
                   {title}
                 </Typography>
-                <Typography variant="h6" className="flex items-center gap-2">
-                  <span>{value}</span>
-                  <span
-                    className={`text-sm font-semibold ${
-                      change.startsWith("+") ? "text-green-300" : "text-red-400"
-                    }`}
+                <Typography variant="h6">
+                  {value}{" "}
+                  <Typography
+                    component="span"
+                    sx={{
+                      color: change.startsWith("+") ? "#86efac" : "#f87171",
+                      fontWeight: 600,
+                    }}
                   >
                     {change}
-                  </span>
+                  </Typography>
                 </Typography>
               </CardContent>
             </Card>
@@ -210,32 +154,19 @@ const Dashboard = () => {
         ))}
       </Grid>
 
-      <Grid container spacing={3} className="mb-6" direction="column">
+      {/* Revenue Chart */}
+      <Grid container spacing={3} mb={4}>
         <Grid item xs={12}>
-          <Card
-            elevation={3}
-            sx={{
-              bgcolor: "#134e4a",
-              color: "#d1fae5",
-            }}
-          >
+          <Card sx={{ bgcolor: "#134e4a", color: "#d1fae5" }} elevation={3}>
             <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                Revenue Generated
-              </Typography>
-              <Typography
-                variant="h4"
-                sx={{ color: "#5eead4", fontWeight: "bold", mb: 3 }}
-              >
-                $59,342.32
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Monthly Revenue
               </Typography>
               <Line
                 data={lineData}
                 options={{
                   responsive: true,
-                  plugins: {
-                    legend: { labels: { color: "#d1fae5" } },
-                  },
+                  plugins: { legend: { labels: { color: "#d1fae5" } } },
                   scales: {
                     x: { ticks: { color: "#d1fae5" } },
                     y: { ticks: { color: "#d1fae5" } },
@@ -245,55 +176,55 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
+      </Grid>
 
-        <Grid item xs={12}>
-          <Card
-            elevation={3}
-            sx={{
-              bgcolor: "#134e4a",
-              color: "#d1fae5",
-            }}
-          >
+      {/* Orders Table */}
+      <Grid container spacing={3} mb={4}>
+        <Grid item xs={12} md={8}>
+          <Card sx={{ bgcolor: "#134e4a", color: "#d1fae5" }} elevation={3}>
             <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-                Recent Transactions
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Recent Orders
               </Typography>
-              <Paper
-                sx={{ maxHeight: 320, overflow: "auto", bgcolor: "#0f766e" }}
-              >
+              <Paper sx={{ bgcolor: "#0f766e", overflow: "auto" }}>
                 <Table stickyHeader>
-                  <TableHead sx={{ bgcolor: "#0d5543", fontWeight: "bold" }}>
+                  <TableHead sx={{ bgcolor: "#0d5543" }}>
                     <TableRow>
-                      <TableCell sx={{ color: "#0d5543" }}>ID</TableCell>
-                      <TableCell sx={{ color: "#0d5543" }}>User</TableCell>
-                      <TableCell sx={{ color: "#0d5543" }}>Date</TableCell>
-                      <TableCell sx={{ color: "#0d5543" }} align="right">
+                      <TableCell sx={{ color: "#d1fae5" }}>Order ID</TableCell>
+                      <TableCell sx={{ color: "#d1fae5" }}>Customer</TableCell>
+                      <TableCell sx={{ color: "#d1fae5" }}>Date</TableCell>
+                      <TableCell sx={{ color: "#d1fae5" }}>Product</TableCell>
+                      <TableCell sx={{ color: "#d1fae5" }} align="right">
                         Amount
                       </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {transactions.map((tx, idx) => (
-                      <TableRow key={idx} sx={{ borderColor: "#0a4e3c" }}>
-                        <TableCell sx={{ color: "#81e6d9" }}>{tx.id}</TableCell>
+                    {orders.map((order) => (
+                      <TableRow key={order.id}>
                         <TableCell sx={{ color: "#81e6d9" }}>
-                          {tx.user}
+                          {order.id}
                         </TableCell>
                         <TableCell sx={{ color: "#81e6d9" }}>
-                          {tx.date}
+                          {order.customer}
+                        </TableCell>
+                        <TableCell sx={{ color: "#81e6d9" }}>
+                          {order.date}
+                        </TableCell>
+                        <TableCell sx={{ color: "#81e6d9" }}>
+                          {order.product}
                         </TableCell>
                         <TableCell sx={{ color: "#81e6d9" }} align="right">
                           <Box
-                            component="span"
                             sx={{
                               backgroundColor: "#5eead4",
                               color: "#0f766e",
                               px: 2,
                               borderRadius: 1,
-                              fontWeight: "600",
+                              fontWeight: 600,
                             }}
                           >
-                            {tx.amount}
+                            {order.amount}
                           </Box>
                         </TableCell>
                       </TableRow>
@@ -304,65 +235,44 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </Grid>
-      </Grid>
 
-      <Grid container spacing={3} className="mb-6">
+        {/* Doughnut Chart */}
         <Grid item xs={12} md={4}>
           <Card
+            sx={{ bgcolor: "#134e4a", color: "#d1fae5", textAlign: "center" }}
             elevation={3}
-            sx={{
-              bgcolor: "#134e4a",
-              color: "#d1fae5",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
           >
             <CardContent>
-              <Doughnut data={doughnutData} />
-              <Typography
-                variant="subtitle1"
-                sx={{
-                  color: "#5eead4",
-                  fontWeight: "bold",
-                  mt: 3,
-                  textAlign: "center",
-                }}
-              >
-                $48,352 revenue generated
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Product Category Share
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: "#81e6d9", textAlign: "center" }}
-              >
-                Includes extra misc expenditures and costs
+              <Doughnut data={doughnutData} />
+              <Typography variant="body2" sx={{ color: "#81e6d9", mt: 2 }}>
+                Based on total units sold
               </Typography>
             </CardContent>
           </Card>
         </Grid>
+      </Grid>
 
-        <Grid item xs={12} md={8}>
-          <Card
-            elevation={3}
-            sx={{
-              bgcolor: "#134e4a",
-              color: "#d1fae5",
-            }}
-          >
+      {/* Bar Chart */}
+      <Grid container spacing={3}>
+        <Grid item xs={12}>
+          <Card sx={{ bgcolor: "#134e4a", color: "#d1fae5" }} elevation={3}>
             <CardContent>
-              <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-                Sales Quantity
+              <Typography variant="h6" fontWeight="bold" mb={2}>
+                Product Sales Volume
               </Typography>
               <Bar
                 data={barData}
                 options={{
                   responsive: true,
-                  scales: {
-                    x: { stacked: true, ticks: { color: "#d1fae5" } },
-                    y: { stacked: true, ticks: { color: "#d1fae5" } },
-                  },
                   plugins: {
                     legend: { labels: { color: "#d1fae5" } },
+                  },
+                  scales: {
+                    x: { ticks: { color: "#d1fae5" } },
+                    y: { ticks: { color: "#d1fae5" } },
                   },
                 }}
               />
