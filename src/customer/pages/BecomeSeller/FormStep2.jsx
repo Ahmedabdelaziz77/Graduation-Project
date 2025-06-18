@@ -23,16 +23,18 @@ function FormStep2({ formik }) {
           error={formik.touched.pickupAddress?.mobile}
           helperText={formik.errors.pickupAddress?.mobile}
           xs={6}
+          type="number"
         />
         {/* pinCode */}
         <AddressTextFields
           name="pickupAddress.pinCode"
-          label="Pin Code"
+          label="Zip Code"
           value={formik.values.pickupAddress?.pinCode}
           onChange={formik.handleChange}
           error={formik.touched.pickupAddress?.pinCode}
           helperText={formik.errors.pickupAddress?.pinCode}
           xs={6}
+          type="number"
         />
         {/* address */}
         <AddressTextFields

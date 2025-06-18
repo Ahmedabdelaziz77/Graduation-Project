@@ -2,6 +2,9 @@ import DealCard from "./DealCard";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
+import { useAppDispatch, useAppSelector } from "../../../../State/Store";
+import { useEffect } from "react";
+import { fetchAllProducts } from "../../../../State/customer/productSlice";
 
 const CustomArrow = ({ className, onClick, icon }) => (
   <div
@@ -13,6 +16,23 @@ const CustomArrow = ({ className, onClick, icon }) => (
 );
 
 function Deal() {
+  const dispatch = useAppDispatch();
+  const {
+    list: products,
+    loading,
+    error,
+  } = useAppSelector((state) => state.products);
+  useEffect(() => {
+    dispatch(fetchAllProducts());
+  }, [dispatch]);
+  if (error) return <div>Error: {error}</div>;
+  const sortedProducts = [...products].sort((a, b) => {
+    const aDiscount = a.discountPrice || 0;
+    const bDiscount = b.discountPrice || 0;
+    if (bDiscount > 0 && aDiscount === 0) return 1;
+    if (aDiscount > 0 && bDiscount === 0) return -1;
+    return 0;
+  });
   const settings = {
     dots: true,
     infinite: true,
@@ -42,9 +62,13 @@ function Deal() {
 
       <div className="relative">
         <Slider {...settings}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => (
-            <DealCard key={item} />
-          ))}
+          {loading
+            ? Array.from({ length: 10 }).map((_, i) => (
+                <DealCard key={i} loading={true} />
+              ))
+            : sortedProducts.map((product) => (
+                <DealCard key={product.id} product={product} loading={false} />
+              ))}
         </Slider>
       </div>
     </div>

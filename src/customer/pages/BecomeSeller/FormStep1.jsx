@@ -14,6 +14,8 @@ function FormStep1({ formik }) {
           onBlur={formik.handleBlur}
           error={formik.touched.mobile && Boolean(formik.errors.mobile)}
           helperText={formik.touched.mobile && formik.errors.mobile}
+          required
+          type="number"
         />
         <TextField
           fullWidth
@@ -24,6 +26,7 @@ function FormStep1({ formik }) {
           onBlur={formik.handleBlur}
           error={formik.touched.TIN && Boolean(formik.errors.TIN)}
           helperText={formik.touched.TIN && formik.errors.TIN}
+          type="number"
         />
       </div>
     </Box>

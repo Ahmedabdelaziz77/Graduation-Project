@@ -11,91 +11,212 @@ import {
 import StarIcon from "@mui/icons-material/Star";
 import { Button, Divider } from "@mui/material";
 import { teal } from "@mui/material/colors";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import Spinner from "../../../components/Spinner";
+import MiniError from "../../../components/MiniError";
+import { fetchProductById } from "../../../State/customer/productSlice";
 import SimilarProduct from "./SimilarProduct/SimilarProduct";
 import ReviewCard from "../Review/ReviewCard";
+import AddReviewForm from "./AddReviewForm";
+import { addToCart } from "../../../State/customer/cartSlice";
+
 function ProductDetails() {
+  const { productId, categoryId, name } = useParams();
+  const dispatch = useDispatch();
   const [quantity, setQuantity] = useState(1);
+  const navigate = useNavigate();
+  const {
+    selectedProduct: product,
+    loading,
+    error,
+  } = useSelector((state) => state.products);
+  const { loading: cartLoading } = useSelector((state) => state.cart);
+  useEffect(() => {
+    if (productId) dispatch(fetchProductById(productId));
+  }, [dispatch, productId]);
+
+  if (loading) return <Spinner />;
+  if (error || !product) return <MiniError message="Failed to load product" />;
+
+  const {
+    name: productName,
+    image,
+    price,
+    description,
+    category,
+    reviews = [
+      {
+        userName: "Ahmed Mostafa",
+        rating: 4.5,
+        comment: "Value for money! Highly recommended.",
+        createdAt: "2024-10-27T23:16:07.478333",
+        image:
+          "https://images.unsplash.com/photo-1606813902804-fd2ef464c229?auto=format&fit=crop&w=400&q=80",
+      },
+      {
+        userName: "Mona Ali",
+        rating: 4,
+        comment: "Loved the packaging and delivery speed!",
+        createdAt: "2024-09-10T14:30:00.000Z",
+        image: "",
+      },
+      {
+        userName: "Youssef",
+        rating: 5,
+        comment: "Best purchase this month. 🔥",
+        createdAt: "2024-08-05T08:45:00.000Z",
+        image:
+          "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=400&q=80",
+      },
+      {
+        userName: "Nour El Din",
+        rating: 3.5,
+        comment: "Good but could be cheaper.",
+        createdAt: "2024-07-15T11:15:00.000Z",
+        image: null,
+      },
+      {
+        userName: "Fatma",
+        rating: 5,
+        comment: "Perfect for my needs, thank you!",
+        createdAt: "2024-06-22T19:22:00.000Z",
+        image: "",
+      },
+      {
+        userName: "Ahmed Mostafa",
+        rating: 4.5,
+        comment: "Value for money! Highly recommended.",
+        createdAt: "2024-10-27T23:16:07.478333",
+        image:
+          "https://images.unsplash.com/photo-1606813902804-fd2ef464c229?auto=format&fit=crop&w=400&q=80",
+      },
+    ],
+  } = product;
+
+  const DiscountedPrice = Math.round(
+    price - (product.discountPrice / 100) * price
+  );
+  const firstFiveReviews = reviews.slice(0, 5);
+  const handleAddToCart = async () => {
+    try {
+      await dispatch(addToCart({ productId, quantity })).unwrap();
+      navigate("/cart");
+    } catch (err) {
+      console.error("Failed to add to cart:", err);
+    }
+  };
   return (
-    <div className="px-5 lg:px-28 pt-10">
+    <div className="px-5 lg:px-28 pt-10 animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {/* Image */}
         <section className="flex flex-col lg:flex-row gap-5">
           <div className="w-full lg:w-[85%]">
             <img
-              className="w-full rounded-md"
-              src="/public/category photos/1-cameras.png"
-              alt=""
+              className="w-full rounded-xl object-contain h-[400px] shadow-lg transition-transform duration-300 hover:scale-105"
+              src={image}
+              alt={productName}
             />
           </div>
         </section>
-        <section className="">
-          <h1 className="font-bold text-lg text-primary-color">
-            sensors & smart locking
-          </h1>
-          <p className="text-gray-500 font-semibold">product_name</p>
-          <div className="flex justify-between items-center py-2 border w-[180px] px-3 mt-5">
-            <div className="flex gap-1 items-center">
-              <span>4</span>
-              <StarIcon sx={{ color: teal[500], fontSize: "17px" }} />
-            </div>
-            <Divider orientation="vertical" flexItem />
-            <span>234 ratings</span>
-          </div>
-          {/* prices */}
-          <div className="">
-            <div className="flex items-center gap-3 mt-5 text-2xl">
-              <span className="font-lora text-gray-800">E£280</span>
-              <span className="font-lora line-through text-gray-400">
-                E£899
-              </span>
-              <span className="text-primary-color font-semibold">70% off</span>
-            </div>
-            <p className="text-sm font-lora ">
-              Inclusive of all taxes. Free Shipping above E£500.
+
+        {/* Details */}
+        <section className="space-y-5">
+          <div>
+            <h1 className="font-bold text-xl text-primary-color uppercase tracking-wide">
+              {category?.name || `Category ${categoryId}`}
+            </h1>
+            <p className="text-gray-600 font-semibold text-2xl">
+              {decodeURIComponent(name)}
             </p>
           </div>
-          {/* Features */}
-          <div className="mt-7 space-y-3">
-            <div className="flex items-center gap-4">
-              <Shield sx={{ color: teal[500] }} />
-              <p>Authentic & Quality Assured</p>
+
+          <div className="flex items-center gap-4 py-2 border w-max px-4 rounded-md shadow-sm bg-gray-50">
+            <div className="flex gap-1 items-center text-sm text-gray-700">
+              <span>4</span>
+              <StarIcon sx={{ color: teal[500], fontSize: "18px" }} />
             </div>
-            <div className="flex items-center gap-4">
-              <WorkspacePremium sx={{ color: teal[500] }} />
-              <p>100% money back guranteed</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <LocalShipping sx={{ color: teal[500] }} />
-              <p>Free Shipping & Returns</p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Wallet sx={{ color: teal[500] }} />
-              <p>Pay on delivery might be available</p>
-            </div>
+            <Divider orientation="vertical" flexItem />
+            <span className="text-sm text-gray-600">234 ratings</span>
           </div>
+
+          {/* Price */}
+          <div className="flex items-center gap-4 text-3xl font-lora">
+            <span className="text-gray-800">
+              E£{DiscountedPrice > 0 ? DiscountedPrice : price}
+            </span>
+            {DiscountedPrice > 0 && (
+              <>
+                <span className="line-through text-gray-400 text-xl">
+                  E£{price}
+                </span>
+                <span className="text-primary-color text-base font-semibold">
+                  -{product.discountPrice}%
+                </span>
+              </>
+            )}
+          </div>
+          <p className="text-sm text-gray-500">
+            Inclusive of all taxes. Free Shipping above E£500.
+          </p>
+
+          {/* Features */}
+          <div className="grid gap-3">
+            {[
+              [
+                <Shield key={1} sx={{ color: teal[500] }} />,
+                "Authentic & Quality Assured",
+              ],
+              [
+                <WorkspacePremium key={2} sx={{ color: teal[500] }} />,
+                "100% money back guaranteed",
+              ],
+              [
+                <LocalShipping key={3} sx={{ color: teal[500] }} />,
+                "Free Shipping & Returns",
+              ],
+              [
+                <Wallet key={4} sx={{ color: teal[500] }} />,
+                "Pay on delivery might be available",
+              ],
+            ].map(([icon, text], idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 text-sm text-gray-700"
+              >
+                {icon}
+                <p>{text}</p>
+              </div>
+            ))}
+          </div>
+
           {/* Quantity */}
-          <div className="mt-7 space-y-2">
-            <h1 className="uppercase"> Quantity</h1>
-            <div className="flex items-center gap-2 w-[140px] justify-between">
+          <div>
+            <h2 className="uppercase text-sm mb-1">Quantity</h2>
+            <div className="flex items-center gap-2 border rounded-lg px-3 py-1 w-fit">
               <Button
                 onClick={() => setQuantity(quantity - 1)}
                 disabled={quantity === 1}
               >
-                <Remove />
+                <Remove fontSize="small" />
               </Button>
               <span>{quantity}</span>
               <Button onClick={() => setQuantity(quantity + 1)}>
-                <Add />
+                <Add fontSize="small" />
               </Button>
             </div>
           </div>
-          {/* two buttons */}
-          <div className="mt-12 flex items-center gap-5">
+
+          {/* Buttons */}
+          <div className="flex gap-4">
             <Button
               fullWidth
               variant="contained"
               startIcon={<AddShoppingCart />}
-              sx={{ py: "1rem" }}
+              sx={{ py: 1.5 }}
+              onClick={handleAddToCart}
+              disabled={cartLoading}
             >
               Add To Cart
             </Button>
@@ -103,27 +224,51 @@ function ProductDetails() {
               fullWidth
               variant="outlined"
               startIcon={<FavoriteBorder />}
-              sx={{ py: "1rem" }}
+              sx={{ py: 1.5 }}
             >
               Wishlist
             </Button>
           </div>
-          {/* description */}
-          <div className="mt-5 text-sm text-gray-700">
-            <p>
-              Lorem Ipsum is simply dummy text of the printing and typesetting
-              industry. Lorem Ipsum has been the industry&apos;s standard dummy
-              text ever since the 1500s, when an unknown printer took a galley
-              of type and scrambled it to make a type specimen book.
-            </p>
+
+          {/* Description */}
+          <div>
+            <h2 className="font-semibold text-md mb-1">Description</h2>
+            <p className="text-sm text-gray-700">{description}</p>
           </div>
-          <div className="mt-12 space-y-5">
-            <ReviewCard />
+
+          {/* Reviews */}
+          <div className="mt-8 space-y-4">
+            <h2 className="font-semibold text-lg">Customer Reviews</h2>
+            {firstFiveReviews.length > 0 ? (
+              firstFiveReviews.map((review, index) => (
+                <ReviewCard key={index} review={review} />
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">No reviews yet.</p>
+            )}
+
+            {reviews.length > 5 && (
+              <div className="text-right">
+                <Link
+                  to={`/reviews/${product.id}`}
+                  className="text-primary-color text-sm font-semibold hover:underline"
+                >
+                  Show All Reviews →
+                </Link>
+              </div>
+            )}
             <Divider />
           </div>
+
+          {/* Add Review */}
+          <AddReviewForm />
         </section>
       </div>
-      <SimilarProduct />
+
+      {/* Similar Products */}
+      <div className="mt-16">
+        <SimilarProduct />
+      </div>
     </div>
   );
 }

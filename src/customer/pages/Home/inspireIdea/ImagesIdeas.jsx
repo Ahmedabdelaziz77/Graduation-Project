@@ -8,10 +8,10 @@ const ImagesIdeas = ({ currentImg }) => {
   const images = [idea1, idea2, idea3, idea4, idea5];
 
   return (
-    <div className="w-1/2 h-[400px] relative overflow-hidden">
+    <div className="w-1/2 h-[400px] relative overflow-hidden rounded-xl shadow-lg">
       {images.map((item, index) => (
         <img
-          className="w-full h-full absolute"
+          className="w-full h-full absolute object-fit transition-transform duration-700 ease-in-out"
           src={item}
           key={index}
           style={{

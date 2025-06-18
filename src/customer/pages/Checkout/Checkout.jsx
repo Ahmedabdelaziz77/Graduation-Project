@@ -7,10 +7,11 @@ import {
   RadioGroup,
 } from "@mui/material";
 import AddressCard from "./AddressCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AddressForm from "./AddressForm";
 import PricingCard from "../Cart/PricingCard";
-
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserProfile } from "../../../State/profileSlice";
 const paymentGatwayList = [
   {
     value: "stripe",
@@ -20,6 +21,15 @@ const paymentGatwayList = [
 ];
 
 function Checkout() {
+  const dispatch = useDispatch();
+  const { data: profile, loading } = useSelector((state) => state.profile);
+  useEffect(() => {
+    dispatch(fetchUserProfile());
+  }, [dispatch]);
+  const handleRadioChange = (e) => {
+    console.log(e.target.checked);
+  };
+
   const style = {
     position: "absolute",
     top: "50%",
@@ -37,6 +47,8 @@ function Checkout() {
   const handlePaymentChange = (e) => {
     setPaymentGatway(e.target.value);
   };
+  if (loading) return <p>Loading address...</p>;
+  if (!profile) return <p>No address found.</p>;
   return (
     <>
       <div className="pt-10 px-5 sm:px-10 md:px-44 lg:px-60 min-h-screen">
@@ -49,8 +61,15 @@ function Checkout() {
             <div className="text-xs font-medium space-y-5">
               <p>Saved Address</p>
               <div className="space-y-3">
-                {[1, 2, 3, 4].map((item) => (
-                  <AddressCard key={item} />
+                {profile.addresses.map((address, index) => (
+                  <AddressCard
+                    key={index}
+                    address={address}
+                    fullName={`${profile.firstname} ${profile.lastname}`}
+                    mobile={profile.mobile}
+                    checked={index === 0}
+                    onSelect={handleRadioChange}
+                  />
                 ))}
               </div>
             </div>

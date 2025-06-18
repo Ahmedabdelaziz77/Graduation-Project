@@ -7,6 +7,43 @@
   font-style: normal;
   color: teal;
 }
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #b2f5ea;
+  border-top: 6px solid #319795;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+.section-loader {
+  width: 40px;
+  height: 40px;
+  border: 5px solid #b2f5ea;
+  border-top: 5px solid #319795; /* teal */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@layer utilities {
+  .animate-floating {
+    animation: floatImage 6s ease-in-out infinite;
+  }
+
+  @keyframes floatImage {
+    0%,
+    100% {
+      transform: scale(1) translateY(0px);
+    }
+    50% {
+      transform: scale(1.03) translateY(-8px);
+    }
+  }
+}
 
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;

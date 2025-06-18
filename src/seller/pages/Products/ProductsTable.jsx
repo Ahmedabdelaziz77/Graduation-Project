@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   styled,
   Table,
@@ -17,9 +17,18 @@ import {
   DialogActions,
   TextField,
   Box,
+  Tooltip,
+  Stack,
 } from "@mui/material";
+import { useAppDispatch, useAppSelector } from "../../../State/Store";
+import {
+  fetchSellerProducts,
+  editProduct,
+  deleteProduct,
+} from "../../../State/seller/sellerProductSlice";
+import Spinner from "../../../components/Spinner";
+import MiniEmpty from "../../../components/MiniEmpty";
 
-// Styled components
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.primary.main,
@@ -36,39 +45,16 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:last-child td, &:last-child th": { border: 0 },
 }));
 
-const initialRows = [
-  {
-    id: 1,
-    title: "Smart Hub",
-    image: "https://via.placeholder.com/40",
-    mrp: 120,
-    sellingPrice: 99,
-    version: "v2.1",
-    stock: 30,
-  },
-  {
-    id: 2,
-    title: "Smart Bulb",
-    image: "https://via.placeholder.com/40",
-    mrp: 25,
-    sellingPrice: 18.5,
-    version: "v1.3",
-    stock: 120,
-  },
-  {
-    id: 3,
-    title: "Motion Sensor",
-    image: "https://via.placeholder.com/40",
-    mrp: 40,
-    sellingPrice: 33,
-    version: "v3.0",
-    stock: 75,
-  },
-];
-
 function ProductsTable() {
-  const [rows, setRows] = useState(initialRows);
-  const [editRow, setEditRow] = useState(null); // The product being edited
+  const dispatch = useAppDispatch();
+  const { products, loading } = useAppSelector((state) => state.sellerProducts);
+  const [editRow, setEditRow] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchSellerProducts());
+  }, [dispatch]);
 
   const handleOpenEdit = (row) => setEditRow({ ...row });
   const handleCloseEdit = () => setEditRow(null);
@@ -76,15 +62,65 @@ function ProductsTable() {
   const handleEditChange = (field, value) => {
     setEditRow((prev) => ({
       ...prev,
-      [field]: field === "title" || field === "version" ? value : Number(value),
+      [field]:
+        field === "name" || field === "hardwareSpecifications"
+          ? value
+          : Number(value),
     }));
   };
 
-  const handleSaveEdit = () => {
-    setRows((prev) => prev.map((r) => (r.id === editRow.id ? editRow : r)));
-    handleCloseEdit();
+  const handleSaveEdit = async () => {
+    try {
+      setSaving(true);
+      const originalProduct = products.find((p) => p.id === editRow.id);
+      if (!originalProduct) return;
+
+      const fullData = {
+        ...originalProduct,
+        name: editRow.name,
+        price: editRow.price,
+        sellingPrice: editRow.sellingPrice,
+        hardwareSpecifications: editRow.hardwareSpecifications,
+        quantityAvailable: editRow.quantityAvailable,
+      };
+      const { id, seller, ...updatedData } = fullData;
+      await dispatch(editProduct({ id: editRow.id, updatedData })).unwrap();
+      handleCloseEdit();
+    } catch (error) {
+      console.error("Failed to update product:", error);
+    } finally {
+      setSaving(false);
+    }
   };
 
+  const handleDeleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
+    try {
+      setDeletingId(id);
+      await dispatch(deleteProduct(id)).unwrap();
+    } catch (err) {
+      console.error("Failed to delete product:", err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <Spinner />
+      </div>
+    );
+  }
+  if (!products || products.length === 0) {
+    return (
+      <MiniEmpty
+        whatIsEmpty="No Products Found"
+        WhatToDo="There's no products available yet. Please add some."
+      />
+    );
+  }
   return (
     <>
       <TableContainer component={Paper} sx={{ mt: 3 }}>
@@ -93,34 +129,62 @@ function ProductsTable() {
             <TableRow>
               <StyledTableCell>Image</StyledTableCell>
               <StyledTableCell>Title</StyledTableCell>
-              <StyledTableCell align="right">MRP</StyledTableCell>
+              <StyledTableCell align="right">Price</StyledTableCell>
               <StyledTableCell align="right">Selling Price</StyledTableCell>
               <StyledTableCell align="right">Version</StyledTableCell>
               <StyledTableCell align="right">Stock</StyledTableCell>
-              <StyledTableCell align="center">Update</StyledTableCell>
+              <StyledTableCell align="center">Actions</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
+            {products.map((row) => (
               <StyledTableRow key={row.id}>
                 <StyledTableCell>
-                  <Avatar src={row.image} alt={row.title} variant="rounded" />
+                  <Avatar
+                    src={row.image || "/placeholder.png"}
+                    alt={row.name}
+                    variant="rounded"
+                  />
                 </StyledTableCell>
-                <StyledTableCell>{row.title}</StyledTableCell>
-                <StyledTableCell align="right">${row.mrp}</StyledTableCell>
+                <StyledTableCell>{row.name}</StyledTableCell>
+                <StyledTableCell align="right">${row.price}</StyledTableCell>
                 <StyledTableCell align="right">
-                  ${row.sellingPrice}
+                  $
+                  {row.sellingPrice && row.sellingPrice <= row.price
+                    ? row.sellingPrice
+                    : row.price}
                 </StyledTableCell>
-                <StyledTableCell align="right">{row.version}</StyledTableCell>
-                <StyledTableCell align="right">{row.stock}</StyledTableCell>
+                <StyledTableCell align="right">
+                  <Tooltip title={row.hardwareSpecifications || ""} arrow>
+                    <span>
+                      {row.hardwareSpecifications?.length > 30
+                        ? `${row.hardwareSpecifications.slice(0, 30)}...`
+                        : row.hardwareSpecifications}
+                    </span>
+                  </Tooltip>
+                </StyledTableCell>
+                <StyledTableCell align="right">
+                  {row.quantityAvailable}
+                </StyledTableCell>
                 <StyledTableCell align="center">
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={() => handleOpenEdit(row)}
-                  >
-                    Edit
-                  </Button>
+                  <Stack direction="row" spacing={1} justifyContent="center">
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => handleOpenEdit(row)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeleteProduct(row.id)}
+                      disabled={deletingId === row.id}
+                    >
+                      {deletingId === row.id ? "Removing..." : "Delete"}
+                    </Button>
+                  </Stack>
                 </StyledTableCell>
               </StyledTableRow>
             ))}
@@ -128,7 +192,6 @@ function ProductsTable() {
         </Table>
       </TableContainer>
 
-      {/* Edit Modal */}
       <Dialog
         open={Boolean(editRow)}
         onClose={handleCloseEdit}
@@ -141,21 +204,21 @@ function ProductsTable() {
             <Box display="flex" flexDirection="column" gap={2} mt={1}>
               <TextField
                 label="Title"
-                value={editRow.title}
-                onChange={(e) => handleEditChange("title", e.target.value)}
+                value={editRow.name}
+                onChange={(e) => handleEditChange("name", e.target.value)}
                 fullWidth
               />
               <TextField
                 label="MRP"
                 type="number"
-                value={editRow.mrp}
-                onChange={(e) => handleEditChange("mrp", e.target.value)}
+                value={editRow.price}
+                onChange={(e) => handleEditChange("price", e.target.value)}
                 fullWidth
               />
               <TextField
                 label="Selling Price"
                 type="number"
-                value={editRow.sellingPrice}
+                value={editRow.sellingPrice || ""}
                 onChange={(e) =>
                   handleEditChange("sellingPrice", e.target.value)
                 }
@@ -163,24 +226,35 @@ function ProductsTable() {
               />
               <TextField
                 label="Version"
-                value={editRow.version}
-                onChange={(e) => handleEditChange("version", e.target.value)}
+                value={editRow.hardwareSpecifications}
+                onChange={(e) =>
+                  handleEditChange("hardwareSpecifications", e.target.value)
+                }
                 fullWidth
               />
               <TextField
                 label="Stock"
                 type="number"
-                value={editRow.stock}
-                onChange={(e) => handleEditChange("stock", e.target.value)}
+                value={editRow.quantityAvailable}
+                onChange={(e) =>
+                  handleEditChange("quantityAvailable", e.target.value)
+                }
                 fullWidth
               />
             </Box>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseEdit}>Cancel</Button>
-          <Button variant="contained" onClick={handleSaveEdit} color="primary">
-            Save
+          <Button onClick={handleCloseEdit} disabled={saving}>
+            Cancel
+          </Button>
+          <Button
+            disabled={saving}
+            variant="contained"
+            onClick={handleSaveEdit}
+            color="primary"
+          >
+            {saving ? "Saving..." : "Save"}
           </Button>
         </DialogActions>
       </Dialog>

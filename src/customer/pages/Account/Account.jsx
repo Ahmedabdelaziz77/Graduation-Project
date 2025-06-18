@@ -44,6 +44,7 @@ function Account() {
             <Route path="/orders" element={<Orders />} />
             <Route
               path="/order/:orderId/:orderItemId"
+              // http://localhost:5173/account/order/1/2
               element={<OrderDetails />}
             />
             <Route path="/addresses" element={<Address />} />

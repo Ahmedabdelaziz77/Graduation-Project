@@ -1,13 +1,30 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { useDispatch, useSelector } from "react-redux";
-import { thunk } from "redux-thunk";
-import sellerSlice from "./seller/sellerSlice";
+import authSlice from "./authSlice";
+import createSellerSlice from "./seller/createSellerSlice";
+import sellerProductSlice from "./seller/sellerProductSlice";
+import productSlice from "./customer/productSlice";
+import categorySlice from "./customer/categorySlice";
+import categoryWithProductsSlice from "./customer/categoryWithProductsSlice";
+import cartSlice from "./customer/cartSlice";
+import profieSlice from "./profileSlice";
+import couponSlice from "./couponSlice";
+import ocrSlice from "./ocrSlice";
 const rootReducer = combineReducers({
-  seller: sellerSlice,
+  auth: authSlice,
+  createSeller: createSellerSlice,
+  products: productSlice,
+  sellerProducts: sellerProductSlice,
+  categories: categorySlice,
+  categoryWithProducts: categoryWithProductsSlice,
+  cart: cartSlice,
+  profile: profieSlice,
+  coupon: couponSlice,
+  ocr: ocrSlice,
 });
+
 const store = configureStore({
   reducer: rootReducer,
-  middleware: (getDefaultMiddleWare) => getDefaultMiddleWare().concat(thunk),
 });
 
 export const useAppDispatch = () => useDispatch();

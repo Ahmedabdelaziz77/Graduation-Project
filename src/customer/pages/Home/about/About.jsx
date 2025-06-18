@@ -1,13 +1,19 @@
 import img1 from "/public/inspire idea/aboutImg1.avif";
 import img2 from "/public/inspire idea/aboutImg2.avif";
+
 const About = () => {
   return (
     <>
-      <div className="p-20 flex items-center justify-center gap-10">
-        <div className="w-1/2">
-          <img src={img1} alt="" />
+      {/* Section 1 */}
+      <div className="p-10 md:p-20 flex flex-col lg:flex-row items-center justify-center gap-10">
+        <div className="w-full lg:w-1/2 overflow-hidden rounded-md">
+          <img
+            src={img1}
+            alt="About"
+            className="w-full h-full object-cover rounded-md animate-floating"
+          />
         </div>
-        <div className="w-1/2">
+        <div className="w-full lg:w-1/2 space-y-4">
           <span className="text-primary-color font-bold text-lg mb-5">
             WHAT IS
           </span>
@@ -33,14 +39,15 @@ const About = () => {
             application, or a Web interface that may also be accessible off-site
             through the Internet wherever you are.
           </p>
-          <button className="bg-primary-color px-6 py-3 mt-5 text-white">
+          <button className="bg-primary-color hover:bg-teal-700 transition px-6 py-3 mt-5 text-white rounded-md">
             Know More
           </button>
         </div>
       </div>
 
-      <div className="p-20 flex items-center justify-center gap-10 bg-gray-200">
-        <div className="w-1/2">
+      {/* Section 2 */}
+      <div className="p-10 md:p-20 flex flex-col-reverse lg:flex-row items-center justify-center gap-10 bg-gray-100">
+        <div className="w-full lg:w-1/2 space-y-4">
           <span className="text-primary-color font-bold text-lg mb-5">
             MAKE YOUR
           </span>
@@ -68,8 +75,12 @@ const About = () => {
             efficiency, and much more
           </p>
         </div>
-        <div className="w-1/2">
-          <img src={img2} alt="" />
+        <div className="w-full lg:w-1/2 overflow-hidden rounded-md">
+          <img
+            src={img2}
+            alt="Smart Life"
+            className="w-full h-full object-cover rounded-md animate-floating"
+          />
         </div>
       </div>
     </>

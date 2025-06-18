@@ -15,7 +15,7 @@ const seller = {
   bank_account_holder_name: "John Doe",
   TIN: "TIN1234567",
   swift_code: "SWFTCODE",
-  logo: "", // can be a valid URL to show image instead of initial
+  logo: "",
   banner: "https://via.placeholder.com/600x200",
   created_at: "2024-05-15T10:00:00Z",
 };

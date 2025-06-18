@@ -18,6 +18,7 @@ function FormStep3({ formik }) {
           formik.touched.bankDetails?.accountNumber &&
           formik.errors.bankDetails?.accountNumber
         }
+        type="number"
       />
       <TextField
         fullWidth

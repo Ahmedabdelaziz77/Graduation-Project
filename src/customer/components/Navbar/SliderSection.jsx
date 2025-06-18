@@ -2,6 +2,7 @@ import Slider from "react-slick";
 import { Typography } from "@mui/material";
 import Arrows from "./Arrows";
 import { useNavigate } from "react-router-dom";
+import MiniEmpty from "../../../components/MiniEmpty";
 
 function SliderSection({ products }) {
   const settings = {
@@ -18,6 +19,16 @@ function SliderSection({ products }) {
     ],
   };
   const navigate = useNavigate();
+  if (!products || products.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <MiniEmpty
+          whatIsEmpty="No Products Available."
+          WhatToDo="Try Again Later."
+        />
+      </div>
+    );
+  }
   return (
     <Slider {...settings} className="px-5 py-5">
       {products.map((product, index) => (
@@ -25,7 +36,11 @@ function SliderSection({ products }) {
           <div className="flex justify-center items-center h-[120px] mb-5 ">
             <img
               className="cursor-pointer"
-              onClick={() => navigate(`/product-details/1/camera/2`)}
+              onClick={() =>
+                navigate(
+                  `/product-details/${product.category.id}/${product.name}/${product.id}`
+                )
+              }
               src={product.image}
               alt={product.name}
               style={{

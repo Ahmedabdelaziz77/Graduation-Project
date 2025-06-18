@@ -1,130 +1,181 @@
 import { useFormik } from "formik";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { addProduct } from "../../../State/seller/sellerProductSlice";
 import { uploadToCloudinary } from "../../../Utils/UploadToCloudinary";
 import {
   Alert,
   Button,
   CircularProgress,
   FormControl,
-  Grid2,
+  Grid,
   IconButton,
   InputLabel,
   MenuItem,
   Select,
-  Snackbar,
   TextField,
+  Typography,
 } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import CloseIcon from "@mui/icons-material/Close";
-const mainCategories = [
-  { categoryId: 1, name: "cameras" },
-  { categoryId: 2, name: "sensors" },
-  { categoryId: 3, name: "thermostats" },
-  { categoryId: 4, name: "camera" },
-];
+import { fetchCategories } from "../../../State/customer/categorySlice";
+import Spinner from "../../../components/Spinner";
+import MiniError from "../../../components/MiniError";
+
 function AddProduct() {
-  const [uploadImage, setUploadImage] = useState(false);
-  const [snackBarOpen, setSnackBarOpen] = useState(false);
+  const dispatch = useDispatch();
+
+  const { loading: productLoading, error: productError } = useSelector(
+    (state) => state.sellerProducts
+  );
+  const {
+    list: categories,
+    loading: categoryLoading,
+    error: categoryError,
+  } = useSelector((state) => state.categories);
+
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
 
   const formik = useFormik({
     initialValues: {
       title: "",
       description: "",
-      mrpPrice: "",
+      price: "",
       sellingPrice: "",
       quantity: "",
-      version: "",
+      hardwareSpecifications: "",
       image: "",
       category: "",
-      category2: "",
-      category3: "",
+      discount: "",
     },
-    onSubmit: (values) => {
-      console.log(values);
+    onSubmit: async (values, { resetForm }) => {
+      setIsSubmitting(true);
+      const productData = {
+        name: values.title,
+        description: values.description,
+        image: values.image,
+        price: Number(values.price),
+        sellingPrice: Number(values.sellingPrice),
+        discountPrice: Number(values.discount),
+        quantityAvailable: Number(values.quantity),
+        hardwareSpecifications: values.hardwareSpecifications,
+        specialOffer: values.discount > 0,
+        category: { id: values.category },
+      };
+
+      const result = await dispatch(addProduct(productData));
+      if (addProduct.fulfilled.match(result)) {
+        setSuccess(true);
+        resetForm();
+        setTimeout(() => setSuccess(false), 3000);
+      }
+      setIsSubmitting(false);
     },
   });
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    setUploadImage(true);
+    if (!file) return;
+    setUploadingImage(true);
     const image = await uploadToCloudinary(file);
     formik.setFieldValue("image", image);
-    setUploadImage(false);
+    setUploadingImage(false);
   };
 
   const handleRemoveImage = () => {
     formik.setFieldValue("image", "");
   };
-  const handleSnackBarClose = () => {
-    setSnackBarOpen(false);
-  };
+
+  if (productLoading || categoryLoading) {
+    return (
+      <div className="flex items-center justify-center h-full w-full">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (categoryError) {
+    return (
+      <div className="flex flex-col justify-center items-center h-full text-red-500 pt-20">
+        <MiniError />
+        <Typography variant="body2" className="mt-2">
+          Error loading categories. Please try again later.
+        </Typography>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <form onSubmit={formik.handleSubmit} className="space-y-4 p-4">
-        <Grid2 container spacing={2}>
-          <Grid2 className="flex flex-wrap gap-5" size={{ xs: 12 }}>
+    <div className="p-4">
+      {productError && <Alert severity="error">{productError}</Alert>}
+      {success && <Alert severity="success">Product added successfully!</Alert>}
+
+      <form onSubmit={formik.handleSubmit} className="space-y-4">
+        <Grid container spacing={2}>
+          <Grid item xs={12} className="flex gap-4 flex-wrap">
             <input
+              id="fileInput"
               type="file"
               accept="image/*"
-              id="fileInput"
               onChange={handleImageUpload}
-              style={{ display: "none" }}
+              hidden
             />
-            <label className="relative" htmlFor="fileInput">
-              <span className="w-24 h-24 cursor-pointer flex items-center justify-center p-3 border rounded-md border-gray-400">
+            <label htmlFor="fileInput" className="relative">
+              <span className="w-24 h-24 border border-gray-400 rounded-md flex items-center justify-center cursor-pointer">
                 <AddPhotoAlternateIcon className="text-gray-700" />
               </span>
-              {uploadImage && (
-                <div className="absolute left-0 right-0 top-0 bottom-0 w-24 h-24 flex justify-center items-center">
-                  <CircularProgress />
+              {uploadingImage && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <CircularProgress size={24} />
                 </div>
               )}
             </label>
+
             {formik.values.image && (
-              <div className="flex flex-wrap gap-2">
-                <div className="relative">
-                  <img
-                    className="w-24 h-24 object-cover"
-                    src={formik.values.image}
-                    alt=""
-                  />
-                  <IconButton
-                    onClick={handleRemoveImage}
-                    size="small"
-                    color="error"
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      right: 0,
-                      outline: "none",
-                    }}
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                </div>
+              <div className="relative">
+                <img
+                  src={formik.values.image}
+                  alt="Uploaded"
+                  className="w-24 h-24 object-cover rounded"
+                />
+                <IconButton
+                  onClick={handleRemoveImage}
+                  size="small"
+                  color="error"
+                  sx={{ position: "absolute", top: 0, right: 0 }}
+                >
+                  <CloseIcon />
+                </IconButton>
               </div>
             )}
-          </Grid2>
-          <Grid2 size={{ xs: 12, md: 4, lg: 4 }}>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              id="title"
-              name="title"
               label="Title"
+              name="title"
               value={formik.values.title}
               onChange={formik.handleChange}
               error={formik.touched.title && Boolean(formik.errors.title)}
               helperText={formik.touched.title && formik.errors.title}
               required
             />
-          </Grid2>
-          <Grid2 size={{ xs: 12 }}>
+          </Grid>
+
+          <Grid item xs={12}>
             <TextField
-              multiline
               fullWidth
+              multiline
               rows={4}
-              id="description"
-              name="description"
               label="Description"
+              name="description"
               value={formik.values.description}
               onChange={formik.handleChange}
               error={
@@ -135,27 +186,27 @@ function AddProduct() {
               }
               required
             />
-          </Grid2>
-          <Grid2 size={{ xs: 12, md: 4, lg: 4 }}>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              id="mrp_price"
-              name="mrpPrice"
-              label="MRP Price"
+              label="Price"
+              name="price"
               type="number"
-              value={formik.values.mrpPrice}
+              value={formik.values.price}
               onChange={formik.handleChange}
-              error={formik.touched.mrpPrice && Boolean(formik.errors.mrpPrice)}
-              helperText={formik.touched.mrpPrice && formik.errors.mrpPrice}
+              error={formik.touched.price && Boolean(formik.errors.price)}
+              helperText={formik.touched.price && formik.errors.price}
               required
             />
-          </Grid2>
-          <Grid2 size={{ xs: 12, md: 4, lg: 4 }}>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              id="sellingPrice"
-              name="sellingPrice"
               label="Selling Price"
+              name="sellingPrice"
               type="number"
               value={formik.values.sellingPrice}
               onChange={formik.handleChange}
@@ -168,117 +219,93 @@ function AddProduct() {
               }
               required
             />
-          </Grid2>
-          <Grid2 size={{ xs: 12, md: 4, lg: 4 }}>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              id="version"
-              name="version"
-              label="Version"
-              value={formik.values.version}
+              label="Hardware Specifications"
+              name="hardwareSpecifications"
+              value={formik.values.hardwareSpecifications}
               onChange={formik.handleChange}
-              error={formik.touched.version && Boolean(formik.errors.version)}
-              helperText={formik.touched.version && formik.errors.version}
+              error={
+                formik.touched.hardwareSpecifications &&
+                Boolean(formik.errors.hardwareSpecifications)
+              }
+              helperText={
+                formik.touched.hardwareSpecifications &&
+                formik.errors.hardwareSpecifications
+              }
               required
             />
-          </Grid2>
-          <Grid2 size={{ xs: 12, md: 4, lg: 4 }}>
-            <FormControl
-              fullWidth
-              error={formik.touched.category && Boolean(formik.errors.category)}
-              required
-            >
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <FormControl fullWidth required>
               <InputLabel id="category-label">Category</InputLabel>
               <Select
                 labelId="category-label"
                 id="category"
                 name="category"
-                label="Category"
                 value={formik.values.category}
                 onChange={formik.handleChange}
+                error={
+                  formik.touched.category && Boolean(formik.errors.category)
+                }
               >
-                {mainCategories.map((item) => (
-                  <MenuItem key={item} value={item.categoryId}>
-                    {item.name}
+                {categories.map((cat) => (
+                  <MenuItem key={cat.id} value={cat.id}>
+                    {cat.name}
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-          </Grid2>
-          <Grid2 size={{ xs: 12, md: 4, lg: 4 }}>
-            <FormControl
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <TextField
               fullWidth
-              error={formik.touched.category && Boolean(formik.errors.category)}
+              label="Discount (%)"
+              name="discount"
+              type="number"
+              inputProps={{ min: 0, max: 100 }}
+              value={formik.values.discount}
+              onChange={formik.handleChange}
+              error={formik.touched.discount && Boolean(formik.errors.discount)}
+              helperText={formik.touched.discount && formik.errors.discount}
               required
-            >
-              <InputLabel id="category2-label">Second Category</InputLabel>
-              <Select
-                labelId="category2-label"
-                id="category"
-                name="category2"
-                label="Category2"
-                value={formik.values.category2}
-                onChange={formik.handleChange}
-              >
-                {mainCategories.map((item) => (
-                  <MenuItem key={item} value={item.categoryId}>
-                    {item.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid2>
-          <Grid2 size={{ xs: 12, md: 4, lg: 4 }}>
-            <FormControl
+            />
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <TextField
               fullWidth
-              error={formik.touched.category && Boolean(formik.errors.category)}
+              label="Quantity"
+              name="quantity"
+              type="number"
+              inputProps={{ min: 0 }}
+              value={formik.values.quantity}
+              onChange={formik.handleChange}
+              error={formik.touched.quantity && Boolean(formik.errors.quantity)}
+              helperText={formik.touched.quantity && formik.errors.quantity}
               required
-            >
-              <InputLabel id="category3-label">Third Category</InputLabel>
-              <Select
-                labelId="category3-label"
-                id="category"
-                name="category3"
-                label="Category3"
-                value={formik.values.category3}
-                onChange={formik.handleChange}
-              >
-                {mainCategories.map((item) => (
-                  <MenuItem key={item} value={item.categoryId}>
-                    {item.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid2>
-          <Grid2 size={{ xs: 12 }}>
+            />
+          </Grid>
+
+          <Grid item xs={12}>
             <Button
-              sx={{ p: "14px" }}
-              color="primary"
-              variant="contained"
-              fullWidth
               type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              disabled={isSubmitting}
+              startIcon={isSubmitting && <CircularProgress size={20} />}
             >
-              Add Product
+              {isSubmitting ? "Adding..." : "Add Product"}
             </Button>
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       </form>
-      {/* <Snackbar
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        open={snackBarOpen}
-        autoCapitalize={6000}
-        onClose={handleSnackBarClose}
-      >
-        <Alert
-          onClose={handleSnackBarClose}
-          severity="error"
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
-          {sellerPr}
-        </Alert>
-      </Snackbar> */}
     </div>
   );
 }

@@ -18,38 +18,139 @@ import BecomeSeller from "./customer/pages/BecomeSeller/BecomeSeller";
 import SellerDashboard from "./seller/pages/SellerDashboard/SellerDashboard";
 import AdminDashboard from "./admin/pages/Dashboard/AdminDashboard";
 import { useEffect } from "react";
-import { fetchProducts } from "./State/fetchProduct";
-import { useAppDispatch } from "./State/Store";
-
+import { useAppDispatch, useAppSelector } from "./State/Store";
+import Auth from "./customer/pages/Auth/Auth";
+import RoleProtectedRoute from "./components/RoleProtectedRoute";
+import { fetchCategorysWithProducts } from "./State/customer/categoryWithProductsSlice";
+import Spinner from "./components/Spinner";
+import MiniError from "./components/MiniError";
+import OCR from "./customer/pages/OCR/OCR";
 function App() {
-  // const dispatch = useAppDispatch();
-  // useEffect(() => {
-  //   fetchProducts();
-  // }, []);
+  const dispatch = useAppDispatch();
+  const { loading, error, data } = useAppSelector(
+    (state) => state.categoryWithProducts
+  );
+
+  useEffect(() => {
+    dispatch(fetchCategorysWithProducts());
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col justify-center items-center h-screen text-red-500">
+        <MiniError />
+        <p className="mt-2 text-center max-w-md">
+          Failed to load categories and products. Please try again later.
+        </p>
+      </div>
+    );
+  }
   return (
     <ThemeProvider theme={customTheme}>
       <div>
-        <Navbar />
+        <Navbar categories={data} />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/products/:category" element={<Product />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/products" element={<Product />} />
+          <Route path="/shop" element={<Product />} />
+          <Route path="/ocr" element={<OCR />} />
           <Route path="/reviews/:productId" element={<Review />} />
           <Route
             path="/product-details/:categoryId/:name/:productId"
             element={<ProductDetails />}
           />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/account/*" element={<Account />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/offerCustomize" element={<OfferCustomize />} />
-          <Route path="/smartApp" element={<SmartApp />} />
-          <Route path="/lastPage" element={<LastPageCustomize />} />
-          <Route path="/appointment" element={<Appointment />} />
 
-          <Route path="/become-seller" element={<BecomeSeller />} />
-          <Route path="/seller/*" element={<SellerDashboard />} />
-          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route
+            path="/cart"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER", "ROLE_SELLER"]}>
+                <Cart />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
+                <Checkout />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/account/*"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
+                <Account />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/offerCustomize"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
+                <OfferCustomize />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/smartApp"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
+                <SmartApp />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/lastPage"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
+                <LastPageCustomize />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/appointment"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
+                <Appointment />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/become-seller"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
+                <BecomeSeller />
+              </RoleProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/seller/*"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_SELLER"]}>
+                <SellerDashboard />
+              </RoleProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/*"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_ADMIN"]}>
+                <AdminDashboard />
+              </RoleProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </ThemeProvider>

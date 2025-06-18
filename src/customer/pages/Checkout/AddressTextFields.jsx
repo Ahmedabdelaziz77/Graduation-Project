@@ -8,6 +8,7 @@ function AddressTextFields({
   error,
   helperText,
   xs,
+  type,
 }) {
   return (
     <Grid2 size={{ xs: xs }}>
@@ -19,6 +20,7 @@ function AddressTextFields({
         onChange={onChange}
         error={error}
         helperText={helperText}
+        type={type || "text"}
       />
     </Grid2>
   );

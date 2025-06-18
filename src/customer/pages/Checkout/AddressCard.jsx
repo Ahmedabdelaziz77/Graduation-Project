@@ -1,24 +1,26 @@
 import { Radio } from "@mui/material";
 
-function AddressCard() {
+function AddressCard({ address, fullName, mobile, checked, onSelect }) {
   const handleRadioChange = (e) => {
-    console.log(e.target.checked);
+    onSelect && onSelect(e);
   };
+
   return (
-    <div className="p-5 border rounded-md flex">
-      <div>
-        <Radio
-          checked={true}
-          onChange={handleRadioChange}
-          value=""
-          name="radio-button"
-        />
-      </div>
-      <div className="space-y-3 pt-3">
-        <h1>user_name</h1>
-        <p className="w-[320px]">egypt-menoufia-sadat city</p>
-        <p>
-          <strong>Mobile :</strong>01015491071
+    <div className="p-5 border rounded-md flex items-start gap-3">
+      <Radio
+        checked={checked}
+        onChange={handleRadioChange}
+        value={`${address.street}-${address.city}-${address.state}-${address.zipcode}`}
+        name="radio-button"
+      />
+      <div className="space-y-2 pt-1 text-sm">
+        <h1 className="font-semibold text-base">{fullName}</h1>
+        <p className="text-gray-600">
+          {address.street} - {address.city} - {address.state} -{" "}
+          {address.zipcode}
+        </p>
+        <p className="text-gray-700">
+          <strong>Mobile:</strong> {mobile}
         </p>
       </div>
     </div>
