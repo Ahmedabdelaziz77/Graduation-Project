@@ -5,6 +5,8 @@ import {
   Modal,
   Radio,
   RadioGroup,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import AddressCard from "./AddressCard";
 import { useEffect, useState } from "react";
@@ -12,9 +14,14 @@ import AddressForm from "./AddressForm";
 import PricingCard from "../Cart/PricingCard";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserProfile } from "../../../State/profileSlice";
-const paymentGatwayList = [
+import { useNavigate } from "react-router-dom";
+import { createOrder } from "../../../State/customer/orderSlice";
+import { clearCart } from "../../../State/customer/cartSlice";
+import { calculateOrderAmounts } from "../../../Utils/priceCalculator";
+
+const paymentGatewayList = [
   {
-    value: "stripe",
+    value: "CREDIT_CARD",
     image: "/public/stripe logo.png",
     label: "Stripe",
   },
@@ -22,15 +29,82 @@ const paymentGatwayList = [
 
 function Checkout() {
   const dispatch = useDispatch();
-  const { data: profile, loading } = useSelector((state) => state.profile);
+  const navigate = useNavigate();
+
+  const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
+  const [paymentMethod, setPaymentMethod] = useState("CREDIT_CARD");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const { data: profile, loading: profileLoading } = useSelector(
+    (state) => state.profile
+  );
+  const { items } = useSelector((state) => state.cart);
+  const { validationResult } = useSelector((state) => state.coupon);
+  const { loading: orderLoading } = useSelector((state) => state.order);
+
   useEffect(() => {
     dispatch(fetchUserProfile());
   }, [dispatch]);
-  const handleRadioChange = (e) => {
-    console.log(e.target.checked);
+
+  const handleAddressSelect = (index) => {
+    setSelectedAddressIndex(index);
   };
 
-  const style = {
+  const handlePaymentChange = (e) => {
+    setPaymentMethod(e.target.value);
+  };
+
+  const handleCheckout = async () => {
+    if (!profile?.addresses?.length) {
+      return setSnackbar({
+        open: true,
+        message: "Please add a shipping address.",
+        severity: "error",
+      });
+    }
+
+    const selectedAddress = profile.addresses[selectedAddressIndex];
+    const shippingAddress = `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.zipcode}`;
+
+    const { originalAmount, discountAmount, totalAmount } =
+      calculateOrderAmounts(items, validationResult);
+    console.log(originalAmount, discountAmount, totalAmount);
+    const orderData = {
+      shippingAddress,
+      paymentMethod,
+      couponCode: validationResult?.valid ? validationResult.code : null,
+      items,
+      validationResult,
+      originalAmount,
+      discountAmount,
+      totalAmount,
+    };
+    console.log(orderData);
+    const result = await dispatch(createOrder(orderData));
+
+    if (createOrder.fulfilled.match(result)) {
+      setSnackbar({
+        open: true,
+        message: "Order placed successfully!",
+        severity: "success",
+      });
+      dispatch(clearCart());
+      // navigate("/order-summary");
+    } else {
+      setSnackbar({
+        open: true,
+        message: result.payload,
+        severity: "error",
+      });
+    }
+  };
+
+  const modalStyle = {
     position: "absolute",
     top: "50%",
     left: "50%",
@@ -40,15 +114,10 @@ function Checkout() {
     boxShadow: 24,
     p: 4,
   };
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const [paymentGatway, setPaymentGatway] = useState("stripe");
-  const handlePaymentChange = (e) => {
-    setPaymentGatway(e.target.value);
-  };
-  if (loading) return <p>Loading address...</p>;
+
+  if (profileLoading) return <p>Loading address...</p>;
   if (!profile) return <p>No address found.</p>;
+
   return (
     <>
       <div className="pt-10 px-5 sm:px-10 md:px-44 lg:px-60 min-h-screen">
@@ -56,10 +125,13 @@ function Checkout() {
           <div className="col-span-2 space-y-5">
             <div className="flex items-center justify-between">
               <h1 className="font-semibold">Select Address</h1>
-              <Button onClick={handleOpen}>Add new Address</Button>
+              <Button onClick={() => setModalOpen(true)}>
+                Add New Address
+              </Button>
             </div>
+
             <div className="text-xs font-medium space-y-5">
-              <p>Saved Address</p>
+              <p>Saved Addresses</p>
               <div className="space-y-3">
                 {profile.addresses.map((address, index) => (
                   <AddressCard
@@ -67,66 +139,79 @@ function Checkout() {
                     address={address}
                     fullName={`${profile.firstname} ${profile.lastname}`}
                     mobile={profile.mobile}
-                    checked={index === 0}
-                    onSelect={handleRadioChange}
+                    checked={index === selectedAddressIndex}
+                    onSelect={() => handleAddressSelect(index)}
                   />
                 ))}
               </div>
             </div>
-            <div className="py-4 px-5 rounded-md border">
-              <Button onClick={handleOpen}>Add new Address</Button>
-            </div>
           </div>
+
           <div>
             <div className="border rounded-md">
               <div className="space-y-3 border p-5 rounded-md">
                 <h1 className="text-primary-color font-medium pb-2 text-center">
-                  Available Payment Gatway
+                  Payment Method
                 </h1>
                 <RadioGroup
-                  aria-labelledby="demo-radio-buttons-group-label"
-                  defaultValue="stripe"
-                  name="radio-buttons-group"
+                  value={paymentMethod}
                   onChange={handlePaymentChange}
-                  value={paymentGatway}
                 >
-                  {paymentGatwayList.map((item) => (
+                  {paymentGatewayList.map((item) => (
                     <FormControlLabel
-                      className="rounded-md flex justify-center pl-[16px]"
                       key={item.value}
                       value={item.value}
                       control={<Radio />}
                       label={
                         <img
-                          className="object-contained w-20"
                           src={item.image}
                           alt={item.label}
+                          className="object-contain w-20"
                         />
                       }
+                      className="rounded-md flex justify-center pl-[16px]"
                     />
                   ))}
                 </RadioGroup>
               </div>
+
               <PricingCard />
+
               <div className="p-5">
-                <Button fullWidth variant="contained" sx={{ py: "11px" }}>
-                  Checkout
+                <Button
+                  fullWidth
+                  variant="contained"
+                  sx={{ py: "11px" }}
+                  onClick={handleCheckout}
+                  disabled={orderLoading}
+                >
+                  {orderLoading ? "Placing Order..." : "Checkout"}
                 </Button>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <Modal
-        open={open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
+
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        <Box sx={modalStyle}>
           <AddressForm />
         </Box>
       </Modal>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

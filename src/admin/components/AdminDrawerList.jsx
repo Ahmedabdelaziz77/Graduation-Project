@@ -32,8 +32,8 @@ const menu = [
     activeIcon: <Category className="text-white" />,
   },
   {
-    name: "Deals",
-    path: "/admin/deals",
+    name: "Create Category",
+    path: "/admin/create-category",
     icon: <LocalOffer className="text-primary-color" />,
     activeIcon: <LocalOffer className="text-white" />,
   },

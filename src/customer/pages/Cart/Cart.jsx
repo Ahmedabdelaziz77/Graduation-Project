@@ -1,3 +1,5 @@
+// Cart.jsx (Updated)
+import { useCallback } from "react";
 import { Close, LocalOffer } from "@mui/icons-material";
 import CartItem from "./CartItem";
 import { teal } from "@mui/material/colors";
@@ -24,20 +26,22 @@ function Cart() {
     message: "",
     severity: "success",
   });
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { items } = useSelector((state) => state.cart);
+  const { validationResult, loading, error } = useSelector(
+    (state) => state.coupon
+  );
 
   useEffect(() => {
     dispatch(fetchCartItems());
   }, [dispatch]);
 
-  const { validation, loading, error } = useSelector((state) => state.coupon);
-
   const handleTextChange = (e) => setCoupon(e.target.value);
 
-  const handleApplyCoupon = async () => {
-    const total = items.reduce((acc, item) => {
+  const calculateTotal = useCallback(() => {
+    return items.reduce((acc, item) => {
       const price =
         item.product.discountPrice > 0
           ? Math.round(
@@ -47,10 +51,14 @@ function Cart() {
           : item.product.price;
       return acc + price * item.quantity;
     }, 0);
+  }, [items]);
 
+  const handleApplyCoupon = async () => {
+    const total = calculateTotal();
     const resultAction = await dispatch(
       validateCoupon({ code: coupon, orderTotal: `${total}` })
     );
+
     if (validateCoupon.fulfilled.match(resultAction)) {
       setSnackbar({
         open: true,
@@ -66,6 +74,15 @@ function Cart() {
     }
   };
 
+  // Recalculate coupon when cart changes
+  useEffect(() => {
+    if (coupon && validationResult?.valid) {
+      const total = calculateTotal();
+      dispatch(validateCoupon({ code: coupon, orderTotal: `${total}` }));
+    }
+    console.log("Cart items changed, recalculating coupon validation");
+  }, [items, calculateTotal, coupon, validationResult, dispatch]);
+
   return (
     <div className="pt-10 px-5 sm:px-10 md:px-60 min-h-screen animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -73,12 +90,10 @@ function Cart() {
           {items?.length > 0 ? (
             items.map((item) => <CartItem key={item.id} item={item} />)
           ) : (
-            <div className="">
-              <MiniEmpty
-                whatIsEmpty="Your Cart Is Empty."
-                WhatToDo="Try To Add Some Products"
-              />
-            </div>
+            <MiniEmpty
+              whatIsEmpty="Your Cart Is Empty."
+              WhatToDo="Try To Add Some Products"
+            />
           )}
         </div>
         <div className="col-span-1 text-sm space-y-3">
@@ -90,6 +105,7 @@ function Cart() {
             <div className="flex justify-between items-center">
               <TextField
                 onChange={handleTextChange}
+                value={coupon}
                 placeholder="Coupon code"
                 size="small"
                 variant="outlined"
@@ -113,11 +129,14 @@ function Cart() {
               </div>
             </Collapse>
           </div>
+
           <div className="border rounded-md">
             <PricingCard items={items} />
             <div className="p-5">
               <Button
-                onClick={() => navigate("/checkout")}
+                onClick={() =>
+                  navigate("/checkout", { state: { couponCode: coupon } })
+                }
                 fullWidth
                 variant="contained"
                 sx={{ py: "11px" }}
@@ -128,6 +147,7 @@ function Cart() {
           </div>
         </div>
       </div>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}

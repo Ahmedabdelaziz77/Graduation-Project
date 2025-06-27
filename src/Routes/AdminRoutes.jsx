@@ -6,6 +6,7 @@ import ShopByCategory from "../admin/pages/Home/ShopByCategory";
 import Deal from "../admin/pages/Home/Deal";
 import Customize from "../admin/pages/Home/Customize";
 import Appointment from "../admin/pages/Home/Appointment";
+import CreateCategoryPage from "../admin/pages/Home/CreateCategory";
 function AdminRoutes() {
   return (
     <div>
@@ -14,7 +15,8 @@ function AdminRoutes() {
         <Route path="/coupon" element={<Coupon />} />
         <Route path="/add-coupon" element={<AddNewCoupon />} />
         <Route path="/shop-by-category" element={<ShopByCategory />} />
-        <Route path="/deals" element={<Deal />} />
+        {/* <Route path="/deals" element={<Deal />} /> */}
+        <Route path="/create-category" element={<CreateCategoryPage />} />
         <Route path="/customize-requests" element={<Customize />} />
         <Route path="/appointments" element={<Appointment />} />
       </Routes>

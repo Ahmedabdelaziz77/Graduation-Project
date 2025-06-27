@@ -25,6 +25,7 @@ import { fetchCategorysWithProducts } from "./State/customer/categoryWithProduct
 import Spinner from "./components/Spinner";
 import MiniError from "./components/MiniError";
 import OCR from "./customer/pages/OCR/OCR";
+import AiSmartSuggestions from "./customer/pages/AiSmartSuggestions/AiSmartSuggestions";
 function App() {
   const dispatch = useAppDispatch();
   const { loading, error, data } = useAppSelector(
@@ -63,6 +64,7 @@ function App() {
           <Route path="/products" element={<Product />} />
           <Route path="/shop" element={<Product />} />
           <Route path="/ocr" element={<OCR />} />
+          <Route path="/analyze-image" element={<AiSmartSuggestions />} />
           <Route path="/reviews/:productId" element={<Review />} />
           <Route
             path="/product-details/:categoryId/:name/:productId"

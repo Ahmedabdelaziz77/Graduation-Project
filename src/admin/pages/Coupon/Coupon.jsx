@@ -1,4 +1,16 @@
-import { Button, Paper } from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+  Button,
+  Paper,
+  Snackbar,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  CircularProgress,
+} from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
@@ -7,6 +19,8 @@ import TableCell, { tableCellClasses } from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchActiveCoupons, deleteCoupon } from "../../../State/couponSlice";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -28,49 +42,149 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-function createData(code, start, end, minOrder, discount) {
-  return { code, start, end, minOrder, discount };
-}
-
-const rows = [
-  createData("SAVE10", "2024-06-01", "2024-06-30", "$50", "10%"),
-  createData("FREESHIP", "2024-06-10", "2024-07-10", "$30", "0%"),
-  createData("WELCOME15", "2024-05-01", "2024-06-15", "$75", "15%"),
-  createData("JULYDEAL", "2024-07-01", "2024-07-31", "$100", "20%"),
-];
-
 function Coupon() {
+  const dispatch = useDispatch();
+  const { activeCoupons, loading, error } = useSelector(
+    (state) => state.coupon
+  );
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    idToDelete: null,
+  });
+
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchActiveCoupons());
+  }, [dispatch]);
+
+  const confirmDelete = (id) => {
+    setConfirmDialog({ open: true, idToDelete: id });
+  };
+
+  const handleDeleteConfirmed = async () => {
+    const { idToDelete } = confirmDialog;
+    if (!idToDelete) return;
+
+    setDeleting(true);
+    const result = await dispatch(deleteCoupon(idToDelete));
+    setDeleting(false);
+
+    if (deleteCoupon.fulfilled.match(result)) {
+      setSnackbar({
+        open: true,
+        message: "Coupon deleted successfully!",
+        severity: "success",
+      });
+      dispatch(fetchActiveCoupons());
+    } else {
+      setSnackbar({
+        open: true,
+        message: result.payload || "Delete failed",
+        severity: "error",
+      });
+    }
+
+    setConfirmDialog({ open: false, idToDelete: null });
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   return (
-    <TableContainer component={Paper} sx={{ mt: 4 }}>
-      <Table sx={{ minWidth: 1000 }} aria-label="coupon table">
-        <TableHead>
-          <TableRow>
-            <StyledTableCell>Coupon Code</StyledTableCell>
-            <StyledTableCell>Start Date</StyledTableCell>
-            <StyledTableCell>End Date</StyledTableCell>
-            <StyledTableCell>Min Order Value</StyledTableCell>
-            <StyledTableCell>Discount %</StyledTableCell>
-            <StyledTableCell align="center">Actions</StyledTableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <StyledTableRow key={row.code}>
-              <StyledTableCell>{row.code}</StyledTableCell>
-              <StyledTableCell>{row.start}</StyledTableCell>
-              <StyledTableCell>{row.end}</StyledTableCell>
-              <StyledTableCell>{row.minOrder}</StyledTableCell>
-              <StyledTableCell>{row.discount}</StyledTableCell>
-              <StyledTableCell align="center">
-                <Button size="small" color="error">
-                  <Delete />
-                </Button>
-              </StyledTableCell>
-            </StyledTableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <>
+      <TableContainer component={Paper} sx={{ mt: 4 }}>
+        <Table sx={{ minWidth: 1000 }} aria-label="coupon table">
+          <TableHead>
+            <TableRow>
+              <StyledTableCell>Coupon Code</StyledTableCell>
+              <StyledTableCell>Start Date</StyledTableCell>
+              <StyledTableCell>End Date</StyledTableCell>
+              <StyledTableCell>Min Order Value</StyledTableCell>
+              <StyledTableCell>Discount %</StyledTableCell>
+              <StyledTableCell align="center">Actions</StyledTableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {activeCoupons.map((coupon) => (
+              <StyledTableRow key={coupon.id}>
+                <StyledTableCell>{coupon.code}</StyledTableCell>
+                <StyledTableCell>
+                  {new Date(coupon.startDate).toLocaleDateString()}
+                </StyledTableCell>
+                <StyledTableCell>
+                  {new Date(coupon.endDate).toLocaleDateString()}
+                </StyledTableCell>
+                <StyledTableCell>${coupon.minOrderValue}</StyledTableCell>
+                <StyledTableCell>{coupon.discountPercentage}%</StyledTableCell>
+                <StyledTableCell align="center">
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => confirmDelete(coupon.id)}
+                  >
+                    <Delete />
+                  </Button>
+                </StyledTableCell>
+              </StyledTableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmDialog.open}
+        onClose={() => setConfirmDialog({ open: false, idToDelete: null })}
+      >
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this coupon? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setConfirmDialog({ open: false, idToDelete: null })}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            onClick={handleDeleteConfirmed}
+            disabled={deleting}
+          >
+            {deleting ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              "Confirm Delete"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }
 

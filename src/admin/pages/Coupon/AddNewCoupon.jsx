@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useFormik } from "formik";
+import * as yup from "yup";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import {
@@ -8,9 +10,22 @@ import {
   Typography,
   Grid,
   Container,
+  Snackbar,
+  Alert,
 } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { createCoupon, fetchActiveCoupons } from "../../../State/couponSlice";
 
 function AddNewCoupon() {
+  const dispatch = useDispatch();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const [loading, setLoading] = useState(false);
+
   const formik = useFormik({
     initialValues: {
       code: "",
@@ -19,13 +34,57 @@ function AddNewCoupon() {
       validityEndDate: null,
       minimumOrderValue: "",
     },
-    onSubmit: (values) => {
-      const formattedValues = {
-        ...values,
-        validityStartDate: values.validityStartDate?.toISOString(),
-        validityEndDate: values.validityEndDate?.toISOString(),
+    validationSchema: yup.object({
+      code: yup.string().required("Required"),
+      discountPercentage: yup
+        .number()
+        .min(1, "Min 1%")
+        .max(100, "Max 100%")
+        .required("Required"),
+      validityStartDate: yup.date().required("Required"),
+      validityEndDate: yup
+        .date()
+        .min(yup.ref("validityStartDate"), "End date must be after start")
+        .required("Required"),
+      minimumOrderValue: yup.number().min(1, "Min 1").required("Required"),
+    }),
+    onSubmit: async (values, { resetForm }) => {
+      const payload = {
+        code: values.code,
+        startDate: values.validityStartDate.toISOString(),
+        endDate: values.validityEndDate.toISOString(),
+        minOrderValue: parseFloat(values.minimumOrderValue),
+        discountPercentage: parseFloat(values.discountPercentage),
+        isActive: true,
       };
-      console.log("Submitted:", formattedValues);
+
+      try {
+        setLoading(true);
+        const result = await dispatch(createCoupon(payload));
+        if (createCoupon.fulfilled.match(result)) {
+          setSnackbar({
+            open: true,
+            message: "Coupon created successfully!",
+            severity: "success",
+          });
+          resetForm();
+          dispatch(fetchActiveCoupons());
+        } else {
+          setSnackbar({
+            open: true,
+            message: result.payload || "Failed to create coupon",
+            severity: "error",
+          });
+        }
+      } catch (err) {
+        setSnackbar({
+          open: true,
+          message: "Unexpected error occurred",
+          severity: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
     },
   });
 
@@ -125,13 +184,28 @@ function AddNewCoupon() {
                 variant="contained"
                 fullWidth
                 sx={{ py: 1.5 }}
+                disabled={loading}
               >
-                Create Coupon
+                {loading ? "Creating..." : "Create Coupon"}
               </Button>
             </Grid>
           </Grid>
         </Box>
       </LocalizationProvider>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

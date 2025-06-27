@@ -1,9 +1,13 @@
 import { Divider } from "@mui/material";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUserProfile } from "../../../State/profileSlice";
 import Orders from "./Orders";
 import OrderDetails from "./OrderDetails";
 import UserDetails from "./UserDetails";
 import Address from "./Address";
+
 const menu = [
   { name: "Orders", path: "/account/orders" },
   { name: "Profile", path: "/account" },
@@ -11,13 +15,28 @@ const menu = [
   { name: "Addresses", path: "/account/addresses" },
   { name: "Logout", path: "/" },
 ];
+
 function Account() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const { data: profile, loading } = useSelector((state) => state.profile);
+
+  useEffect(() => {
+    dispatch(fetchUserProfile());
+  }, [dispatch]);
+
   return (
     <div className="px-5 lg:px-52 min-h-screen mt-10">
       <div>
-        <h1 className="text-xl font-bold pb-5">customer_name</h1>
+        <h1 className="text-xl font-bold pb-5">
+          {loading
+            ? "Loading..."
+            : profile
+            ? `${profile.firstname} ${profile.lastname}`
+            : "Welcome!"}
+        </h1>
       </div>
       <Divider />
       <div className="grid grid-cols-1 lg:grid-cols-3 lg:min-h-[78vh]">
@@ -37,6 +56,7 @@ function Account() {
             </div>
           ))}
         </section>
+
         {/* right section */}
         <section className="lg:col-span-2 lg:pl-5 py-5">
           <Routes>
@@ -44,7 +64,6 @@ function Account() {
             <Route path="/orders" element={<Orders />} />
             <Route
               path="/order/:orderId/:orderItemId"
-              // http://localhost:5173/account/order/1/2
               element={<OrderDetails />}
             />
             <Route path="/addresses" element={<Address />} />

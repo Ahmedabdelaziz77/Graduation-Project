@@ -7,6 +7,7 @@ import productSlice from "./customer/productSlice";
 import categorySlice from "./customer/categorySlice";
 import categoryWithProductsSlice from "./customer/categoryWithProductsSlice";
 import cartSlice from "./customer/cartSlice";
+import orderSlice from "./customer/orderSlice";
 import profieSlice from "./profileSlice";
 import couponSlice from "./couponSlice";
 import ocrSlice from "./ocrSlice";
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   profile: profieSlice,
   coupon: couponSlice,
   ocr: ocrSlice,
+  order: orderSlice,
 });
 
 const store = configureStore({

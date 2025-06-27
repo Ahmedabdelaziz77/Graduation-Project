@@ -2,36 +2,40 @@ import { ElectricBolt } from "@mui/icons-material";
 import { Avatar } from "@mui/material";
 import { teal } from "@mui/material/colors";
 
-function OrderItem() {
+function OrderItem({ order }) {
+  const { status, orderItems, orderDate } = order;
+  console.log(orderItems);
   return (
     <div className="text-sm bg-white p-5 space-y-4 border rounded-md cursor-pointer">
       <div className="flex items-center gap-5">
+        <Avatar sizes="small" sx={{ bgcolor: teal[500] }}>
+          <ElectricBolt />
+        </Avatar>
         <div>
-          <Avatar sizes="small" sx={{ bgcolor: teal[500] }}>
-            <ElectricBolt />
-          </Avatar>
-        </div>
-        <div>
-          <h1 className="font-bold text-primary-color">PENDING</h1>
-          <p>Arriving by Wed, 17 OCT</p>
+          <h1 className="font-bold text-primary-color">{status}</h1>
+          <p>Placed on {new Date(orderDate).toDateString()}</p>
         </div>
       </div>
-      <div className="p-5 bg-teal-50 flex gap-3">
-        <div>
+
+      {orderItems.map((item) => (
+        <div key={item.id} className="p-5 bg-teal-50 flex gap-3">
           <img
             className="w-[70px] object-cover"
-            src="/public/category photos/1-cameras.png"
-            alt=""
+            src={item.image}
+            alt={item.productName}
           />
+          <div className="w-full space-y-2">
+            <h1 className="font-bold">{item.productName}</h1>
+            <p>Quantity: {item.quantity}</p>
+            <p>
+              <strong>Price:</strong> {item.unitPrice} EGP
+            </p>
+            <p>
+              <strong>Total:</strong> {item.subtotal} EGP
+            </p>
+          </div>
         </div>
-        <div className="w-full space-y-2">
-          <h1 className="font-bold">camera zz</h1>
-          <p> h | a | r | d | w | a | r | e | specification</p>
-          <p>
-            <strong>main information : xx </strong>
-          </p>
-        </div>
-      </div>
+      ))}
     </div>
   );
 }
