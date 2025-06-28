@@ -1,83 +1,81 @@
+// src/State/customer/cartSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { api } from "../../config/Api";
 
-// Add to cart
+// Thunks
 export const addToCart = createAsyncThunk(
-  "cart/addToCart",
+  "cart/add",
   async ({ productId, quantity }, { rejectWithValue }) => {
     try {
-      const response = await api.post("/cart-items", { productId, quantity });
-      return response.data;
-    } catch (error) {
+      const res = await api.post("/cart-items", { productId, quantity });
+      return res.data;
+    } catch (err) {
       return rejectWithValue(
-        error.response?.data?.message || "Add to cart failed"
+        err.response?.data?.message || "Failed to add item."
       );
     }
   }
 );
 
-// Get all cart items
 export const fetchCartItems = createAsyncThunk(
-  "cart/fetchCartItems",
+  "cart/fetch",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await api.get("/cart-items");
-      return response.data;
-    } catch (error) {
+      const res = await api.get("/cart-items");
+      return res.data;
+    } catch (err) {
       return rejectWithValue(
-        error.response?.data?.message || "Fetching cart failed"
+        err.response?.data?.message || "Failed to fetch cart."
       );
     }
   }
 );
 
-// Update cart item
 export const updateCartItem = createAsyncThunk(
-  "cart/updateCartItem",
+  "cart/update",
   async ({ cartItemId, quantity }, { rejectWithValue }) => {
     try {
-      const response = await api.put(`/cart-items/${cartItemId}`, { quantity });
-      return response.data;
-    } catch (error) {
+      const res = await api.put(`/cart-items/${cartItemId}`, { quantity });
+      return res.data;
+    } catch (err) {
       return rejectWithValue(
-        error.response?.data?.message || "Updating cart item failed"
+        err.response?.data?.message || "Failed to update item."
       );
     }
   }
 );
 
-// Delete cart item
 export const deleteCartItem = createAsyncThunk(
-  "cart/deleteCartItem",
+  "cart/delete",
   async ({ cartItemId, productId, quantity }, { rejectWithValue }) => {
     try {
       await api.delete(`/cart-items/${cartItemId}`, {
         data: { productId, quantity },
       });
       return cartItemId;
-    } catch (error) {
+    } catch (err) {
       return rejectWithValue(
-        error.response?.data?.message || "Deleting cart item failed"
+        err.response?.data?.message || "Failed to delete item."
       );
     }
   }
 );
 
-// Clear all cart items
 export const clearCart = createAsyncThunk(
-  "cart/clearCart",
+  "cart/clear",
   async (_, { rejectWithValue }) => {
     try {
       await api.delete("/cart-items/clearAll");
       return true;
-    } catch (error) {
+    } catch (err) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to clear cart"
+        err.response?.data?.message || "Failed to clear cart."
       );
     }
   }
 );
 
+// Slice
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -88,56 +86,51 @@ const cartSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(addToCart.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      // Add
+      .addCase(addToCart.pending, (s) => void (s.loading = true))
+      .addCase(addToCart.fulfilled, (s, a) => {
+        s.loading = false;
+        s.items.push(a.payload);
       })
-      .addCase(addToCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items.push(action.payload);
-      })
-      .addCase(addToCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(addToCart.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       })
 
-      .addCase(fetchCartItems.pending, (state) => {
-        state.loading = true;
-        state.error = null;
+      // Fetch
+      .addCase(fetchCartItems.pending, (s) => void (s.loading = true))
+      .addCase(fetchCartItems.fulfilled, (s, a) => {
+        s.loading = false;
+        s.items = a.payload;
       })
-      .addCase(fetchCartItems.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = action.payload;
-      })
-      .addCase(fetchCartItems.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+      .addCase(fetchCartItems.rejected, (s, a) => {
+        s.loading = false;
+        s.error = a.payload;
       })
 
-      .addCase(updateCartItem.fulfilled, (state, action) => {
-        const index = state.items.findIndex(
-          (item) => item.id === action.payload.id
-        );
-        if (index !== -1) {
-          state.items[index] = action.payload;
-        }
+      // Update
+      .addCase(updateCartItem.fulfilled, (s, a) => {
+        const idx = s.items.findIndex((i) => i.id === a.payload.id);
+        if (idx !== -1) s.items[idx] = a.payload;
       })
-      .addCase(updateCartItem.rejected, (state, action) => {
-        state.error = action.payload;
+      .addCase(updateCartItem.rejected, (s, a) => {
+        s.error = a.payload;
       })
 
-      .addCase(deleteCartItem.fulfilled, (state, action) => {
-        state.items = state.items.filter((item) => item.id !== action.payload);
+      // Delete
+      .addCase(deleteCartItem.fulfilled, (s, a) => {
+        s.items = s.items.filter((i) => i.id !== a.payload);
       })
-      .addCase(deleteCartItem.rejected, (state, action) => {
-        state.error = action.payload;
+      .addCase(deleteCartItem.rejected, (s, a) => {
+        s.error = a.payload;
       })
 
-      .addCase(clearCart.fulfilled, (state) => {
-        state.items = [];
+      // Clear
+      .addCase(clearCart.fulfilled, (s) => {
+        s.items = [];
       })
-      .addCase(clearCart.rejected, (state, action) => {
-        state.error = action.payload;
+      .addCase(clearCart.rejected, (s, a) => {
+        s.error = a.payload;
       });
   },
 });

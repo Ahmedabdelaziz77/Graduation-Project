@@ -28,7 +28,6 @@ export const createOrder = createAsyncThunk(
         discountAmount,
         totalAmount,
       };
-      console.log(payload);
       const response = await api.post("/orders", payload);
       return response.data;
     } catch (error) {

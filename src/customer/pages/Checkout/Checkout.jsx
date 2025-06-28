@@ -13,11 +13,13 @@ import { useEffect, useState } from "react";
 import AddressForm from "./AddressForm";
 import PricingCard from "../Cart/PricingCard";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUserProfile } from "../../../State/profileSlice";
 import { useNavigate } from "react-router-dom";
 import { createOrder } from "../../../State/customer/orderSlice";
 import { clearCart } from "../../../State/customer/cartSlice";
 import { calculateOrderAmounts } from "../../../Utils/priceCalculator";
+import { fetchUserAddresses } from "../../../State/customer/addressSlice";
+import Spinner from "../../../components/Spinner";
+import MiniError from "../../../components/MiniError";
 
 const paymentGatewayList = [
   {
@@ -39,16 +41,15 @@ function Checkout() {
     message: "",
     severity: "success",
   });
-
-  const { data: profile, loading: profileLoading } = useSelector(
-    (state) => state.profile
+  const { list: addresses, loading: addressLoading } = useSelector(
+    (state) => state.address
   );
   const { items } = useSelector((state) => state.cart);
   const { validationResult } = useSelector((state) => state.coupon);
   const { loading: orderLoading } = useSelector((state) => state.order);
 
   useEffect(() => {
-    dispatch(fetchUserProfile());
+    dispatch(fetchUserAddresses());
   }, [dispatch]);
 
   const handleAddressSelect = (index) => {
@@ -60,7 +61,7 @@ function Checkout() {
   };
 
   const handleCheckout = async () => {
-    if (!profile?.addresses?.length) {
+    if (!addresses.length) {
       return setSnackbar({
         open: true,
         message: "Please add a shipping address.",
@@ -68,8 +69,8 @@ function Checkout() {
       });
     }
 
-    const selectedAddress = profile.addresses[selectedAddressIndex];
-    const shippingAddress = `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.zipcode}`;
+    const selectedAddress = addresses[selectedAddressIndex];
+    const shippingAddress = `${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.locality}, ${selectedAddress.pinCode}`;
 
     const { originalAmount, discountAmount, totalAmount } =
       calculateOrderAmounts(items, validationResult);
@@ -80,11 +81,10 @@ function Checkout() {
       couponCode: validationResult?.valid ? validationResult.code : null,
       items,
       validationResult,
-      originalAmount,
+      originalAmount: totalAmount,
       discountAmount,
-      totalAmount,
+      totalAmount: originalAmount,
     };
-    console.log(orderData);
     const result = await dispatch(createOrder(orderData));
 
     if (createOrder.fulfilled.match(result)) {
@@ -115,8 +115,14 @@ function Checkout() {
     p: 4,
   };
 
-  if (profileLoading) return <p>Loading address...</p>;
-  if (!profile) return <p>No address found.</p>;
+  if (addressLoading || orderLoading) return <Spinner />;
+  if (!addresses)
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-5">
+        <MiniError />
+        <p>No address found.</p>;
+      </div>
+    );
 
   return (
     <>
@@ -132,18 +138,36 @@ function Checkout() {
 
             <div className="text-xs font-medium space-y-5">
               <p>Saved Addresses</p>
-              <div className="space-y-3">
-                {profile.addresses.map((address, index) => (
-                  <AddressCard
-                    key={index}
-                    address={address}
-                    fullName={`${profile.firstname} ${profile.lastname}`}
-                    mobile={profile.mobile}
-                    checked={index === selectedAddressIndex}
-                    onSelect={() => handleAddressSelect(index)}
-                  />
-                ))}
-              </div>
+              {addresses.length === 0 ? (
+                <div className="border p-4 rounded text-center text-gray-500">
+                  <p>No saved addresses found.</p>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setModalOpen(true)}
+                    sx={{ mt: 2 }}
+                  >
+                    Add New Address
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {addresses.map((address, index) => (
+                    <AddressCard
+                      key={index}
+                      address={{
+                        street: address.address,
+                        city: address.city,
+                        state: address.state,
+                        zipcode: address.pinCode,
+                      }}
+                      fullName={address.name}
+                      mobile={address.mobile}
+                      checked={index === selectedAddressIndex}
+                      onSelect={() => handleAddressSelect(index)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -195,7 +219,12 @@ function Checkout() {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         <Box sx={modalStyle}>
-          <AddressForm />
+          <AddressForm
+            onSuccess={() => {
+              setModalOpen(false);
+              dispatch(fetchUserAddresses());
+            }}
+          />
         </Box>
       </Modal>
 

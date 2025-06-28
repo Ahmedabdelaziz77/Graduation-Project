@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUserOrders } from "../../../State/customer/orderSlice";
 import OrderItem from "./OrderItem";
+import Spinner from "../../../components/Spinner";
 
 function Orders() {
   const dispatch = useDispatch();
@@ -11,7 +12,7 @@ function Orders() {
     dispatch(fetchUserOrders());
   }, [dispatch]);
 
-  if (loading) return <p>Loading orders...</p>;
+  if (loading) return <Spinner />;
   if (error) return <p>Error: {error}</p>;
   if (!orders.length) return <p>No orders found</p>;
   console.log(orders);
@@ -22,17 +23,13 @@ function Orders() {
         <p>from anytime</p>
       </div>
 
-      {loading ? (
-        <p>Loading orders...</p>
-      ) : (
-        <div className="space-y-2">
-          {orders?.length > 0 ? (
-            orders.map((order) => <OrderItem key={order.id} order={order} />)
-          ) : (
-            <p>No orders found.</p>
-          )}
-        </div>
-      )}
+      <div className="space-y-2">
+        {orders?.length > 0 ? (
+          orders.map((order) => <OrderItem key={order.id} order={order} />)
+        ) : (
+          <p>No orders found.</p>
+        )}
+      </div>
     </div>
   );
 }

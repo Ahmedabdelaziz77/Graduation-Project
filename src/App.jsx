@@ -9,7 +9,6 @@ import Cart from "./customer/pages/Cart/Cart";
 import Checkout from "./customer/pages/Checkout/Checkout";
 import Account from "./customer/pages/Account/Account";
 import { Route, Routes } from "react-router-dom";
-
 import OfferCustomize from "./customer/pages/offerCustomize/OfferCustomize";
 import SmartApp from "./customer/pages/offerCustomize/SmartApp";
 import LastPageCustomize from "./customer/pages/offerCustomize/LastPageCustomize";
@@ -24,8 +23,13 @@ import RoleProtectedRoute from "./components/RoleProtectedRoute";
 import { fetchCategorysWithProducts } from "./State/customer/categoryWithProductsSlice";
 import Spinner from "./components/Spinner";
 import MiniError from "./components/MiniError";
-import OCR from "./customer/pages/OCR/OCR";
 import AiSmartSuggestions from "./customer/pages/AiSmartSuggestions/AiSmartSuggestions";
+
+// ✅ Toastify
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import OCRPage from "./customer/pages/OCR/OCRPage";
+
 function App() {
   const dispatch = useAppDispatch();
   const { loading, error, data } = useAppSelector(
@@ -54,16 +58,18 @@ function App() {
       </div>
     );
   }
+
   return (
     <ThemeProvider theme={customTheme}>
       <div>
         <Navbar categories={data} />
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/products" element={<Product />} />
           <Route path="/shop" element={<Product />} />
-          <Route path="/ocr" element={<OCR />} />
+          <Route path="/ocr" element={<OCRPage />} />
           <Route path="/analyze-image" element={<AiSmartSuggestions />} />
           <Route path="/reviews/:productId" element={<Review />} />
           <Route
@@ -135,7 +141,6 @@ function App() {
               </RoleProtectedRoute>
             }
           />
-
           <Route
             path="/seller/*"
             element={
@@ -144,7 +149,6 @@ function App() {
               </RoleProtectedRoute>
             }
           />
-
           <Route
             path="/admin/*"
             element={
@@ -154,6 +158,16 @@ function App() {
             }
           />
         </Routes>
+
+        {/* ✅ Global Toast Handler */}
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          pauseOnHover
+          closeOnClick
+          draggable
+          theme="colored"
+        />
       </div>
     </ThemeProvider>
   );

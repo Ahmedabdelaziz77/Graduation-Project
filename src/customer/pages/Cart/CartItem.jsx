@@ -1,5 +1,11 @@
 import { Add, Close, Remove } from "@mui/icons-material";
-import { Button, Divider, IconButton, CircularProgress } from "@mui/material";
+import {
+  Button,
+  Divider,
+  IconButton,
+  CircularProgress,
+  Tooltip,
+} from "@mui/material";
 import { useDispatch } from "react-redux";
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -12,29 +18,23 @@ function CartItem({ item }) {
   const dispatch = useDispatch();
   const { id: cartItemId, product, quantity } = item;
 
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [loading, setLoading] = useState({ update: false, delete: false });
 
-  const handleIncrease = async () => {
-    setLoadingUpdate(true);
-    await dispatch(updateCartItem({ cartItemId, quantity: quantity + 1 }));
-    setLoadingUpdate(false);
-  };
+  const handleQuantityChange = async (type) => {
+    if ((type === "dec" && quantity <= 1) || loading.update) return;
 
-  const handleDecrease = async () => {
-    if (quantity > 1) {
-      setLoadingUpdate(true);
-      await dispatch(updateCartItem({ cartItemId, quantity: quantity - 1 }));
-      setLoadingUpdate(false);
-    }
+    setLoading((prev) => ({ ...prev, update: true }));
+    const newQty = type === "inc" ? quantity + 1 : quantity - 1;
+    await dispatch(updateCartItem({ cartItemId, quantity: newQty }));
+    setLoading((prev) => ({ ...prev, update: false }));
   };
 
   const handleRemove = async () => {
-    setLoadingDelete(true);
+    setLoading((prev) => ({ ...prev, delete: true }));
     await dispatch(
       deleteCartItem({ cartItemId, productId: product.id, quantity })
     );
-    setLoadingDelete(false);
+    setLoading((prev) => ({ ...prev, delete: false }));
   };
 
   const discountedPrice =
@@ -50,7 +50,7 @@ function CartItem({ item }) {
       animate={{ opacity: 1, y: 0 }}
       className="border rounded-md relative bg-white shadow-sm"
     >
-      {/* Top section */}
+      {/* Product Info */}
       <div className="p-5 flex gap-4 items-center">
         <img
           className="w-[90px] h-[90px] rounded-md object-cover border"
@@ -61,8 +61,7 @@ function CartItem({ item }) {
           <h1 className="font-semibold text-lg">{product.category.name}</h1>
           <p className="text-gray-700 font-medium text-sm">{product.name}</p>
           <p className="text-gray-400 text-xs">
-            <strong>Sold by: </strong>
-            {product.seller?.user?.firstname || "N/A"}
+            <strong>Sold by:</strong> {product.seller?.user?.firstname || "N/A"}
           </p>
           <p className="text-sm text-green-600">7 days replacement available</p>
         </div>
@@ -70,22 +69,25 @@ function CartItem({ item }) {
 
       <Divider />
 
-      {/* Quantity and Price */}
+      {/* Quantity + Price */}
       <div className="flex items-center justify-between px-5 py-3 font-lora">
         <div className="flex items-center gap-2 border rounded-md px-2">
           <Button
-            onClick={handleDecrease}
-            disabled={quantity <= 1 || loadingUpdate}
+            onClick={() => handleQuantityChange("dec")}
+            disabled={quantity <= 1 || loading.update}
           >
-            {loadingUpdate ? (
+            {loading.update ? (
               <CircularProgress size={16} />
             ) : (
               <Remove fontSize="small" />
             )}
           </Button>
           <span className="text-base">{quantity}</span>
-          <Button onClick={handleIncrease} disabled={loadingUpdate}>
-            {loadingUpdate ? (
+          <Button
+            onClick={() => handleQuantityChange("inc")}
+            disabled={loading.update}
+          >
+            {loading.update ? (
               <CircularProgress size={16} />
             ) : (
               <Add fontSize="small" />
@@ -98,15 +100,19 @@ function CartItem({ item }) {
         </p>
       </div>
 
-      {/* Remove button */}
+      {/* Remove Button */}
       <div className="absolute top-1 right-1">
-        <IconButton
-          onClick={handleRemove}
-          color="primary"
-          disabled={loadingDelete}
-        >
-          {loadingDelete ? <CircularProgress size={20} /> : <Close />}
-        </IconButton>
+        <Tooltip title="Remove item">
+          <span>
+            <IconButton
+              onClick={handleRemove}
+              color="primary"
+              disabled={loading.delete}
+            >
+              {loading.delete ? <CircularProgress size={20} /> : <Close />}
+            </IconButton>
+          </span>
+        </Tooltip>
       </div>
     </motion.div>
   );

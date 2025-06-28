@@ -11,6 +11,9 @@ import orderSlice from "./customer/orderSlice";
 import profieSlice from "./profileSlice";
 import couponSlice from "./couponSlice";
 import ocrSlice from "./ocrSlice";
+import addressSlice from "./customer/addressSlice";
+import aiSlice from "./customer/aiSlice";
+
 const rootReducer = combineReducers({
   auth: authSlice,
   createSeller: createSellerSlice,
@@ -23,6 +26,8 @@ const rootReducer = combineReducers({
   coupon: couponSlice,
   ocr: ocrSlice,
   order: orderSlice,
+  address: addressSlice,
+  ai: aiSlice,
 });
 
 const store = configureStore({

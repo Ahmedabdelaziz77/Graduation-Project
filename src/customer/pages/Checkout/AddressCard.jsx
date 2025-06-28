@@ -16,7 +16,8 @@ function AddressCard({ address, fullName, mobile, checked, onSelect }) {
       <div className="space-y-2 pt-1 text-sm">
         <h1 className="font-semibold text-base">{fullName}</h1>
         <p className="text-gray-600">
-          {address.street} - {address.city} - {address.state} -{" "}
+          {address.address} - {address.city} - {address.state} -{" "}
+          {address.locality}
           {address.zipcode}
         </p>
         <p className="text-gray-700">

@@ -1,82 +1,138 @@
-import { useState } from "react";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  analyzeImage,
+  regeneratePlacements,
+} from "../../../State/customer/aiSlice";
+import { addToCart } from "../../../State/customer/cartSlice";
+import TransparentSpinner from "../../../components/TransparentSpinner";
+import { toast } from "react-toastify";
+import ImageUpload from "./ImageUpload";
+import PlacementResult from "./PlacementResult";
+import RecommendationList from "./RecommendationList";
 
 function AiSmartSuggestions() {
-  const [image, setImage] = useState(null);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const { analyzeResult, loading } = useSelector((state) => state.ai);
 
-  const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+  const [image, setImage] = useState(null);
+  const [localResult, setLocalResult] = useState(null);
+  const [showAll, setShowAll] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const [addedProducts, setAddedProducts] = useState([]);
+  const [addingToCart, setAddingToCart] = useState(null);
+
+  useEffect(() => {
+    if (analyzeResult) setLocalResult(analyzeResult);
+  }, [analyzeResult]);
+
+  const handleImageChange = (e) => setImage(e.target.files[0]);
+
+  const handleSubmit = () => {
+    if (!image) return;
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(image);
+
+    img.onload = () => {
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      URL.revokeObjectURL(objectUrl);
+
+      if (width < 2000 || height < 1000) {
+        toast.warn("⚠️ Image must be at least 2000x3000px.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", image);
+
+      dispatch(analyzeImage(formData)).then((res) => {
+        if (res.payload) {
+          toast.success("✅ Image analyzed!");
+          setLocalResult(res.payload);
+          setAddedProducts([]);
+        } else {
+          toast.error("❌ Analysis failed.");
+        }
+      });
+    };
+
+    img.onerror = () => toast.error("❌ Failed to load image.");
+    img.src = objectUrl;
   };
 
-  const handleSubmit = async () => {
-    if (!image) return;
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append("file", image);
-
+  const handleRegenerate = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:8000/analyze-image",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-
-      setResult(response.data);
-    } catch (error) {
-      console.error("Error:", error);
-      setResult(null);
+      setRegenerating(true);
+      const { payload } = await dispatch(regeneratePlacements());
+      if (payload?.imageUrl) {
+        setLocalResult((prev) => ({
+          ...prev,
+          imageUrl: payload.imageUrl,
+          recommendations: payload.recommendations,
+        }));
+        toast.success("🎉 New placement generated!");
+        setAddedProducts([]);
+      } else {
+        toast.warn("⚠️ No image returned.");
+      }
+    } catch {
+      toast.error("❌ Regeneration failed.");
     } finally {
-      setLoading(false);
+      setRegenerating(false);
+    }
+  };
+
+  const handleAddToCart = async (rec, idx) => {
+    const productId = rec.id ?? idx;
+    setAddingToCart(productId);
+    try {
+      await dispatch(addToCart({ productId: rec.id, quantity: 1 })).unwrap();
+      setAddedProducts((prev) => [...prev, productId]);
+      toast.success(`${rec.name} added to cart`);
+    } catch {
+      toast.error(`❌ Failed to add ${rec.name}`);
+    } finally {
+      setAddingToCart(null);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h2 className="text-2xl font-semibold mb-4">AI Smart Home Recommender</h2>
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      <h1 className="text-4xl font-bold text-primary-color text-center mb-10">
+        🧠 AI Smart Home Recommender
+      </h1>
 
-      <input type="file" onChange={handleImageChange} className="mb-4" />
-      <button
-        onClick={handleSubmit}
-        className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
-        disabled={loading}
-      >
-        {loading ? "Analyzing..." : "Analyze Image"}
-      </button>
+      <ImageUpload
+        loading={loading}
+        handleImageChange={handleImageChange}
+        handleSubmit={handleSubmit}
+      />
 
-      {result && (
-        <div className="mt-6">
-          <h3 className="text-xl font-medium mb-2">
-            Detected Room: {result.roomType}
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {result.recommendations.map((rec, idx) => (
-              <div key={idx} className="border p-4 rounded shadow">
-                <h4 className="font-bold">{rec.device}</h4>
-                <p className="text-sm">📍 {rec.position}</p>
-                <p className="text-xs text-gray-500 italic">💡 {rec.reason}</p>
-
-                {rec.product && (
-                  <div className="mt-2">
-                    <img
-                      src={rec.product.image}
-                      alt={rec.product.name}
-                      className="w-24 h-24 object-contain mb-1"
-                    />
-                    <p className="font-medium">{rec.product.name}</p>
-                    <p className="text-green-600 font-bold">
-                      {rec.product.price} EGP
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+      {loading && (
+        <div className="flex justify-center items-center min-h-[300px]">
+          <TransparentSpinner />
         </div>
+      )}
+
+      {!loading && localResult && (
+        <>
+          <PlacementResult
+            localResult={localResult}
+            regenerating={regenerating}
+            handleRegenerate={handleRegenerate}
+            showAll={showAll}
+            setShowAll={setShowAll}
+          />
+          <RecommendationList
+            recommendations={localResult.recommendations}
+            showAll={showAll}
+            handleAddToCart={handleAddToCart}
+            addedProducts={addedProducts}
+            addingToCart={addingToCart}
+          />
+        </>
       )}
     </div>
   );

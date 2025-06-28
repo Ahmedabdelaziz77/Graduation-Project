@@ -1,8 +1,4 @@
-// Cart.jsx (Updated)
-import { useCallback } from "react";
-import { Close, LocalOffer } from "@mui/icons-material";
-import CartItem from "./CartItem";
-import { teal } from "@mui/material/colors";
+import { useCallback, useEffect, useState } from "react";
 import {
   Button,
   IconButton,
@@ -11,13 +7,16 @@ import {
   Snackbar,
   Alert,
 } from "@mui/material";
-import { useEffect, useState } from "react";
-import PricingCard from "./PricingCard";
+import { Close, LocalOffer } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCartItems } from "../../../State/customer/cartSlice";
-import MiniEmpty from "../../../components/MiniEmpty";
 import { validateCoupon } from "../../../State/couponSlice";
+import CartItem from "./CartItem";
+import PricingCard from "./PricingCard";
+import Spinner from "../../../components/Spinner";
+import MiniEmpty from "../../../components/MiniEmpty";
+import { teal } from "@mui/material/colors";
 
 function Cart() {
   const [coupon, setCoupon] = useState("");
@@ -29,19 +28,18 @@ function Cart() {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { items } = useSelector((state) => state.cart);
-  const { validationResult, loading, error } = useSelector(
+
+  const { items, loading: cartLoading } = useSelector((state) => state.cart);
+  const { validationResult, loading: couponLoading } = useSelector(
     (state) => state.coupon
   );
 
-  useEffect(() => {
-    dispatch(fetchCartItems());
-  }, [dispatch]);
-
-  const handleTextChange = (e) => setCoupon(e.target.value);
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const calculateTotal = useCallback(() => {
-    return items.reduce((acc, item) => {
+    return items.reduce((total, item) => {
       const price =
         item.product.discountPrice > 0
           ? Math.round(
@@ -49,45 +47,45 @@ function Cart() {
                 (item.product.discountPrice / 100) * item.product.price
             )
           : item.product.price;
-      return acc + price * item.quantity;
+      return total + price * item.quantity;
     }, 0);
   }, [items]);
 
   const handleApplyCoupon = async () => {
     const total = calculateTotal();
-    const resultAction = await dispatch(
+    const result = await dispatch(
       validateCoupon({ code: coupon, orderTotal: `${total}` })
     );
 
-    if (validateCoupon.fulfilled.match(resultAction)) {
-      setSnackbar({
-        open: true,
-        message: resultAction.payload.message,
-        severity: "success",
-      });
+    if (validateCoupon.fulfilled.match(result)) {
+      showSnackbar(result.payload.message, "success");
     } else {
-      setSnackbar({
-        open: true,
-        message: resultAction.payload,
-        severity: "error",
-      });
+      showSnackbar(result.payload || "Coupon validation failed", "error");
     }
   };
 
-  // Recalculate coupon when cart changes
+  // Initial cart fetch
+  useEffect(() => {
+    dispatch(fetchCartItems());
+  }, [dispatch]);
+
+  // Revalidate coupon on cart update (only if valid & set)
   useEffect(() => {
     if (coupon && validationResult?.valid) {
-      const total = calculateTotal();
-      dispatch(validateCoupon({ code: coupon, orderTotal: `${total}` }));
+      dispatch(
+        validateCoupon({ code: coupon, orderTotal: `${calculateTotal()}` })
+      );
     }
-    console.log("Cart items changed, recalculating coupon validation");
-  }, [items, calculateTotal, coupon, validationResult, dispatch]);
+  }, [items, coupon, validationResult?.valid, dispatch, calculateTotal]);
+
+  if (cartLoading || couponLoading) return <Spinner />;
 
   return (
     <div className="pt-10 px-5 sm:px-10 md:px-60 min-h-screen animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Cart Items */}
         <div className="lg:col-span-2 space-y-3">
-          {items?.length > 0 ? (
+          {items.length > 0 ? (
             items.map((item) => <CartItem key={item.id} item={item} />)
           ) : (
             <MiniEmpty
@@ -96,15 +94,19 @@ function Cart() {
             />
           )}
         </div>
+
+        {/* Sidebar */}
         <div className="col-span-1 text-sm space-y-3">
+          {/* Coupon Section */}
           <div className="border rounded-md px-5 py-3 space-y-5">
             <div className="flex gap-3 items-center text-sm">
               <LocalOffer sx={{ color: teal[600], fontSize: "17px" }} />
               <span>Apply Coupons</span>
             </div>
+
             <div className="flex justify-between items-center">
               <TextField
-                onChange={handleTextChange}
+                onChange={(e) => setCoupon(e.target.value)}
                 value={coupon}
                 placeholder="Coupon code"
                 size="small"
@@ -113,11 +115,12 @@ function Cart() {
               <Button
                 size="small"
                 onClick={handleApplyCoupon}
-                disabled={!coupon || loading}
+                disabled={!coupon || couponLoading}
               >
-                {loading ? "Checking..." : "Apply"}
+                {couponLoading ? "Checking..." : "Apply"}
               </Button>
             </div>
+
             <Collapse in={!!coupon}>
               <div className="flex">
                 <div className="p-1 pl-5 pr-3 border rounded-md flex gap-2 items-center">
@@ -130,24 +133,28 @@ function Cart() {
             </Collapse>
           </div>
 
+          {/* Price + Checkout */}
           <div className="border rounded-md">
-            <PricingCard items={items} />
-            <div className="p-5">
-              <Button
-                onClick={() =>
-                  navigate("/checkout", { state: { couponCode: coupon } })
-                }
-                fullWidth
-                variant="contained"
-                sx={{ py: "11px" }}
-              >
-                Buy now
-              </Button>
-            </div>
+            <PricingCard />
+            {items.length > 0 && (
+              <div className="p-5">
+                <Button
+                  fullWidth
+                  variant="contained"
+                  sx={{ py: "11px" }}
+                  onClick={() =>
+                    navigate("/checkout", { state: { couponCode: coupon } })
+                  }
+                >
+                  Buy now
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={4000}
