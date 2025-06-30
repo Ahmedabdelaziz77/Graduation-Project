@@ -1,295 +1,362 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import RightOffer from "./RightOffer";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { createOffer } from "../../../State/customer/offersSlice";
 
 const LastPageCustomize = () => {
-  const [showMoreLight, setShowMoreLight] = useState(false);
-  const [showMoreCurtain, setShowMoreCurtain] = useState(false);
-  const [showMoreShutter, setShowMoreShutter] = useState(false);
-  const [other, setOther] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [optionalFeatures, setOptionalFeatures] = useState({
+    lighting: {
+      enabled: false,
+      controlMethods: [],
+      other: "",
+    },
+    curtain: {
+      enabled: false,
+      shape: "",
+      length: "",
+      count: "",
+      other: "",
+    },
+    shutter: {
+      enabled: false,
+      length: "",
+      count: "",
+    },
+  });
+
+  const [showLighting, setShowLighting] = useState(false);
+  const [otherLighting, setOtherLighting] = useState(false);
+  const [showCurtain, setShowCurtain] = useState(false);
+  const [showShutter, setShowShutter] = useState(false);
   const [otherCurtain, setOtherCurtain] = useState(false);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem("optionalFeatures")) || {};
+    setOptionalFeatures((prev) => ({
+      ...prev,
+      ...saved,
+    }));
+  }, []);
+
+  const toggleControlMethod = (method) => {
+    setOptionalFeatures((prev) => {
+      const methods = prev.lighting.controlMethods.includes(method)
+        ? prev.lighting.controlMethods.filter((m) => m !== method)
+        : [...prev.lighting.controlMethods, method];
+      return {
+        ...prev,
+        lighting: {
+          ...prev.lighting,
+          controlMethods: methods,
+        },
+      };
+    });
+  };
+
+  const handleSubmit = () => {
+    const step1 = JSON.parse(localStorage.getItem("offerStep1"));
+    const smartSensors = JSON.parse(localStorage.getItem("smartSensors"));
+    const prevOptions =
+      JSON.parse(localStorage.getItem("optionalFeatures")) || {};
+
+    const finalData = {
+      ...step1,
+      smartSensors,
+      optionalFeatures: {
+        ...prevOptions,
+        ...optionalFeatures,
+      },
+    };
+    if (finalData.installationDate)
+      finalData.installationDate = new Date(finalData.installationDate)
+        .toISOString()
+        .slice(0, 19);
+    dispatch(createOffer(finalData)).then(() => {
+      localStorage.clear();
+      navigate("/thank-you");
+    });
+  };
+
   return (
     <div className="flex items-center gap-10 mt-10 p-20">
       <RightOffer />
-      <div className="w-1/2 ">
+      <div className="w-1/2">
         <h1 className="text-3xl mb-3 font-bold">Let&apos;s Discuss</h1>
         <h2 className="text-3xl mb-3 font-bold text-primary-color">
           Your Requirements!
         </h2>
         <div className="border border-primary-color p-5 rounded-lg">
-          <div className="mb-7">
-            <label className="cursor-pointer" htmlFor="light">
-              <input
-                className="outline-none border-b border-primary-color mr-3 cursor-pointer"
-                type="checkbox"
-                id="light"
-                required
-                onChange={(e) => setShowMoreLight(e.target.checked)}
-              />
-              Smart Lighting
-              {showMoreLight && (
-                <>
-                  <h1 className="pl-5 mt-6 text-sm">Lighting control by</h1>
-                  <div className="flex pl-5 mt-2">
-                    <div className="w-1/2">
-                      <label className="cursor-pointer" htmlFor="smart1">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="checkbox"
-                          id="smart1"
-                        />
-                        Smart switches
-                      </label>
-                    </div>
-                    <div className="w-1/2">
-                      <label className="cursor-pointer" htmlFor="smart2">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="checkbox"
-                          id="smart2"
-                        />
-                        In-wall switches
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex pl-5 mt-2">
-                    <div className="w-1/2">
-                      <label className="cursor-pointer" htmlFor="smart3">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="checkbox"
-                          id="smart3"
-                        />
-                        Sensors
-                      </label>
-                    </div>
-                    <div className="w-1/2">
-                      <label className="cursor-pointer" htmlFor="smart4">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="checkbox"
-                          id="smart4"
-                        />
-                        Control panel
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex pl-5 mt-2">
-                    <div className="w-1/2">
-                      <label className="cursor-pointer" htmlFor="smart5">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="checkbox"
-                          id="smart5"
-                        />
-                        Voice Command
-                      </label>
-                    </div>
-                  </div>
-                  <div className="flex pl-5 mt-2">
-                    <div className="w-1/2">
-                      <label className="cursor-pointer" htmlFor="smart6">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="checkbox"
-                          id="smart6"
-                          onChange={(e) => setOther(e.target.checked)}
-                        />
-                        Other
-                        {other && (
-                          <>
-                            <br />
-                            <br />
-                            <input
-                              className="outline-none border-b border-primary-color w-[500px]"
-                              required
-                              placeholder="Please specify your requirement"
-                            />
-                          </>
-                        )}
-                      </label>
-                    </div>
-                  </div>
-                </>
-              )}
-            </label>
-          </div>
-          <div className="mb-7">
-            <label className="cursor-pointer" htmlFor="curtain">
-              <input
-                className="outline-none border-b border-primary-color mr-3 cursor-pointer"
-                type="checkbox"
-                required
-                id="curtain"
-                onChange={(e) => setShowMoreCurtain(e.target.checked)}
-              />
-              Smart Curtain
-              {showMoreCurtain && (
-                <>
-                  <>
-                    <h1 className="pl-5 mt-6 text-sm">Curtain Shape *</h1>
-                    <div className="flex pl-5 mt-2">
-                      <div className="w-1/3">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="radio"
-                          id="line"
-                          name="curtain"
-                          value="line"
-                          required
-                        />
+          {/* Lighting */}
+          <label className="cursor-pointer" htmlFor="light">
+            <input
+              id="light"
+              type="checkbox"
+              checked={showLighting}
+              onChange={(e) => {
+                setShowLighting(e.target.checked);
+                setOptionalFeatures((prev) => ({
+                  ...prev,
+                  lighting: { ...prev.lighting, enabled: e.target.checked },
+                }));
+              }}
+              className="mr-2"
+            />
+            Smart Lighting
+          </label>
 
-                        <label className="mr-11 cursor-pointer" htmlFor="line">
-                          Straight line
-                        </label>
-                      </div>
-                      <div className="w-1/3">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="radio"
-                          id="shape"
-                          name="curtain"
-                          value="shape"
-                          required
-                        />
-                        <label className="mr-11 cursor-pointer" htmlFor="shape">
-                          L shape
-                        </label>
-                      </div>
-                      <div className="w-1/3">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="radio"
-                          id="curved"
-                          name="curtain"
-                          value="Curved"
-                          required
-                        />
-                        <label
-                          className="mr-11 cursor-pointer"
-                          htmlFor="curved"
-                        >
-                          Curved
-                        </label>
-                      </div>
-                    </div>
-                    <div className="flex pl-5 mt-2">
-                      <label className="mr-11 cursor-pointer" htmlFor="outher">
-                        <input
-                          className="mr-3 cursor-pointer"
-                          type="radio"
-                          id="outher"
-                          name="curtain"
-                          value="outher"
-                          required
-                          onChange={(e) => setOtherCurtain(e.target.checked)}
-                        />
-                        Outher
-                        {otherCurtain && (
-                          <>
-                            <br />
-                            <br />
-                            <input
-                              className="outline-none border-b border-primary-color w-[500px]"
-                              required
-                              placeholder="Please specify?"
-                            />
-                          </>
-                        )}
-                      </label>
-                    </div>
-
-                    <div className="flex pl-5 mt-6 ">
-                      <div className="w-1/2">
-                        <label htmlFor="">
-                          Length (meter) *
-                          <br />
-                          <input
-                            className="outline-none border-b border-primary-color mt-2"
-                            required
-                            placeholder="i.e .5"
-                          />
-                        </label>
-                      </div>
-                      <div className="w-1/2">
-                        <label htmlFor="">
-                          Number of curtains *
-                          <br />
-                          <input
-                            className="outline-none border-b border-primary-color mt-2"
-                            required
-                            placeholder="i.e. 2"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  </>
-                </>
+          {showLighting && (
+            <div className="pl-5 mt-4">
+              <label>
+                <input
+                  type="checkbox"
+                  onChange={() => toggleControlMethod("Smart switches")}
+                />
+                Smart switches
+              </label>
+              <br />
+              <label>
+                <input
+                  type="checkbox"
+                  onChange={() => toggleControlMethod("In-wall switches")}
+                />
+                In-wall switches
+              </label>
+              <br />
+              <label>
+                <input
+                  type="checkbox"
+                  onChange={() => toggleControlMethod("Sensors")}
+                />
+                Sensors
+              </label>
+              <br />
+              <label>
+                <input
+                  type="checkbox"
+                  onChange={() => toggleControlMethod("Control panel")}
+                />
+                Control panel
+              </label>
+              <br />
+              <label>
+                <input
+                  type="checkbox"
+                  onChange={() => toggleControlMethod("Voice Command")}
+                />
+                Voice Command
+              </label>
+              <br />
+              <label>
+                <input
+                  type="checkbox"
+                  onChange={(e) => {
+                    setOtherLighting(e.target.checked);
+                    if (!e.target.checked) {
+                      setOptionalFeatures((prev) => ({
+                        ...prev,
+                        lighting: { ...prev.lighting, other: "" },
+                      }));
+                    }
+                  }}
+                />
+                Other
+              </label>
+              {otherLighting && (
+                <input
+                  className="outline-none border-b border-primary-color w-[300px] mt-2"
+                  placeholder="Please specify"
+                  onChange={(e) =>
+                    setOptionalFeatures((prev) => ({
+                      ...prev,
+                      lighting: {
+                        ...prev.lighting,
+                        other: e.target.value,
+                      },
+                    }))
+                  }
+                />
               )}
-            </label>
-          </div>
-          <div className="mb-7">
-            <label className="cursor-pointer" htmlFor="shutter">
+            </div>
+          )}
+
+          {/* Curtain */}
+          <label className="cursor-pointer mt-5 block" htmlFor="curtain">
+            <input
+              id="curtain"
+              type="checkbox"
+              checked={showCurtain}
+              onChange={(e) => {
+                setShowCurtain(e.target.checked);
+                setOptionalFeatures((prev) => ({
+                  ...prev,
+                  curtain: { ...prev.curtain, enabled: e.target.checked },
+                }));
+              }}
+              className="mr-2"
+            />
+            Smart Curtain
+          </label>
+
+          {showCurtain && (
+            <div className="pl-5 mt-4">
+              <label>
+                <input
+                  type="radio"
+                  name="curtainShape"
+                  value="Straight"
+                  onChange={(e) =>
+                    setOptionalFeatures((prev) => ({
+                      ...prev,
+                      curtain: { ...prev.curtain, shape: e.target.value },
+                    }))
+                  }
+                />
+                Straight line
+              </label>
+              <br />
+              <label>
+                <input
+                  type="radio"
+                  name="curtainShape"
+                  value="L shape"
+                  onChange={(e) =>
+                    setOptionalFeatures((prev) => ({
+                      ...prev,
+                      curtain: { ...prev.curtain, shape: e.target.value },
+                    }))
+                  }
+                />
+                L shape
+              </label>
+              <br />
+              <label>
+                <input
+                  type="radio"
+                  name="curtainShape"
+                  value="Curved"
+                  onChange={(e) =>
+                    setOptionalFeatures((prev) => ({
+                      ...prev,
+                      curtain: { ...prev.curtain, shape: e.target.value },
+                    }))
+                  }
+                />
+                Curved
+              </label>
+              <br />
+              <label>
+                <input
+                  type="radio"
+                  name="curtainShape"
+                  value="Other"
+                  onChange={(e) => setOtherCurtain(e.target.checked)}
+                />
+                Other
+              </label>
+              {otherCurtain && (
+                <input
+                  placeholder="Other shape..."
+                  className="outline-none border-b border-primary-color w-[300px] mt-2"
+                  onChange={(e) =>
+                    setOptionalFeatures((prev) => ({
+                      ...prev,
+                      curtain: { ...prev.curtain, other: e.target.value },
+                    }))
+                  }
+                />
+              )}
+              <div className="flex gap-4 mt-4">
+                <input
+                  placeholder="Length (m)"
+                  className="outline-none border-b border-primary-color"
+                  onChange={(e) =>
+                    setOptionalFeatures((prev) => ({
+                      ...prev,
+                      curtain: { ...prev.curtain, length: e.target.value },
+                    }))
+                  }
+                />
+                <input
+                  placeholder="Number of curtains"
+                  className="outline-none border-b border-primary-color"
+                  onChange={(e) =>
+                    setOptionalFeatures((prev) => ({
+                      ...prev,
+                      curtain: { ...prev.curtain, count: e.target.value },
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Shutter */}
+          <label className="cursor-pointer mt-5 block" htmlFor="shutter">
+            <input
+              id="shutter"
+              type="checkbox"
+              checked={showShutter}
+              onChange={(e) => {
+                setShowShutter(e.target.checked);
+                setOptionalFeatures((prev) => ({
+                  ...prev,
+                  shutter: { ...prev.shutter, enabled: e.target.checked },
+                }));
+              }}
+              className="mr-2"
+            />
+            Smart Shutter
+          </label>
+
+          {showShutter && (
+            <div className="flex gap-4 pl-5 mt-4">
               <input
-                className="outline-none border-b border-primary-color mr-3 cursor-pointer"
-                type="checkbox"
-                required
-                id="shutter"
-                onChange={(e) => setShowMoreShutter(e.target.checked)}
+                placeholder="Length (m)"
+                className="outline-none border-b border-primary-color"
+                onChange={(e) =>
+                  setOptionalFeatures((prev) => ({
+                    ...prev,
+                    shutter: { ...prev.shutter, length: e.target.value },
+                  }))
+                }
               />
-              Smart Shutter
-              {showMoreShutter && (
-                <>
-                  <div className="flex pl-5 mt-6 ">
-                    <div className="w-1/2">
-                      <label htmlFor="">
-                        Length (meter) *
-                        <br />
-                        <input
-                          className="outline-none border-b border-primary-color mt-2"
-                          required
-                          placeholder="i.e .5"
-                        />
-                      </label>
-                    </div>
-                    <div className="w-1/2">
-                      <label htmlFor="">
-                        Number of curtains *
-                        <br />
-                        <input
-                          className="outline-none border-b border-primary-color mt-2"
-                          required
-                          placeholder="i.e. 2"
-                        />
-                      </label>
-                    </div>
-                  </div>
-                </>
-              )}
-            </label>
-          </div>
+              <input
+                placeholder="Number of shutters"
+                className="outline-none border-b border-primary-color"
+                onChange={(e) =>
+                  setOptionalFeatures((prev) => ({
+                    ...prev,
+                    shutter: { ...prev.shutter, count: e.target.value },
+                  }))
+                }
+              />
+            </div>
+          )}
 
-          <div className="flex items-center justify-between">
+          {/* Submit */}
+          <div className="flex justify-between mt-10">
             <Link
-              to={"/smartApp"}
-              className="bg-white px-6 py-3 border border-black hover:bg-primary-color hover:text-white hover:border-primary-color duration-300 -mt-5"
+              to="/smartApp"
+              className="bg-white px-6 py-3 border border-black hover:bg-primary-color hover:text-white duration-300"
             >
               Back
             </Link>
-            <div className="flex items-center justify-between mb-5">
-              <div className=""></div>
-              <Link
-                to={"/lastPage"}
-                className="bg-primary-color text-white px-6 py-3 border-no"
-              >
-                Submit
-              </Link>
-            </div>
+            <button
+              onClick={handleSubmit}
+              className="bg-primary-color text-white px-6 py-3"
+            >
+              Submit
+            </button>
           </div>
-          <div className="text-center">page 3/3</div>
+          <div className="text-center mt-2">Page 3/3</div>
         </div>
       </div>
     </div>
   );
 };
+
 export default LastPageCustomize;

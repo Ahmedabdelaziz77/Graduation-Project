@@ -1,169 +1,254 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RightOffer from "./RightOffer";
 import ButtonNext from "./ButtonNext";
 
-export const OfferCustomize = () => {
+const OfferCustomize = () => {
   const [numberPage, setNumberPage] = useState(1);
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    mobile: "",
+    email: "",
+    address: {
+      street: "",
+      city: "",
+      state: "",
+      zipcode: "",
+    },
+    requirements: "",
+    homeType: "Villa",
+    homeStatus: "UNDER_CONSTRUCTION",
+    homeSize: 120,
+    numberOfLevels: 1,
+    numberOfRooms: 1,
+    installationDate: "",
+  });
+
+  useEffect(() => {
+    const saved = localStorage.getItem("offerStep1");
+    if (saved) {
+      setFormData(JSON.parse(saved));
+    }
+  }, []);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name in formData.address) {
+      setFormData((prev) => ({
+        ...prev,
+        address: { ...prev.address, [name]: value },
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSave = () => {
+    localStorage.setItem("offerStep1", JSON.stringify(formData));
+  };
+
   return (
     <div className="flex items-center gap-10 mt-10 p-20">
       <RightOffer />
       <div className="w-1/2">
-        <h1 className="text-3xl mb-3 font-bold">Let&apos;s Discuss</h1>
+        <h1 className="text-3xl mb-3 font-bold">Let's Discuss</h1>
         <h2 className="text-3xl mb-3 font-bold text-primary-color">
           Your Requirements!
         </h2>
         <div className="border border-primary-color p-5 rounded-lg">
           <div className="flex items-center overflow-hidden mb-10">
             <div className="mr-4">
-              <label className="" htmlFor="">
-                First name *
-              </label>
+              <label>First name *</label>
               <input
                 className="outline-none border-b border-primary-color"
-                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
                 required
               />
             </div>
             <div className="mr-4">
-              <label className="" htmlFor="">
-                Last name *
-              </label>
+              <label>Last name *</label>
               <input
                 className="outline-none border-b border-primary-color"
-                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
                 required
               />
             </div>
             <div className="mr-4">
-              <label className="" htmlFor="">
-                Mobile *
-              </label>
+              <label>Mobile *</label>
               <input
                 className="outline-none border-b border-primary-color"
-                type="phone"
+                name="mobile"
+                value={formData.mobile}
+                onChange={handleChange}
                 required
               />
             </div>
           </div>
+
           <div className="flex items-center overflow-hidden mb-10">
-            <div className="mr-4 ">
-              <label htmlFor="">Email *</label>
-              <br />
+            <div className="mr-4">
+              <label>Email *</label>
               <input
                 className="outline-none border-b border-primary-color"
-                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 required
               />
             </div>
             <div className="">
-              <label htmlFor="">Address *</label>
-              <br />
+              <label>Street Address *</label>
               <input
                 className="w-[500px] outline-none border-b border-primary-color"
-                type="address"
+                name="street"
+                value={formData.address.street}
+                onChange={handleChange}
                 required
               />
             </div>
           </div>
+
+          <div className="flex items-center overflow-hidden mb-10">
+            <div className="mr-4">
+              <label>City *</label>
+              <input
+                className="outline-none border-b border-primary-color"
+                name="city"
+                value={formData.address.city}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mr-4">
+              <label>State *</label>
+              <input
+                className="outline-none border-b border-primary-color"
+                name="state"
+                value={formData.address.state}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mr-4">
+              <label>Zipcode *</label>
+              <input
+                className="outline-none border-b border-primary-color"
+                name="zipcode"
+                value={formData.address.zipcode}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+
           <div className="overflow-hidden mb-10">
-            <label htmlFor="">Share with us your requirements *</label>
-            <br />
-            <br />
+            <label>Share with us your requirements *</label>
             <textarea
               className="p-2 w-[600px] outline-none border-b border-primary-color"
-              placeholder="i.e. I Wanna Make my home smart."
+              name="requirements"
+              value={formData.requirements}
+              onChange={handleChange}
               required
-            ></textarea>
+            />
           </div>
+
           <div className="overflow-hidden mb-10">
             <h1 className="text-2xl mb-3 font-bold">About your home</h1>
             <div className="flex">
-              <form action="" className="w-1/3 mr-4">
-                <label htmlFor="">Home Type *</label>
-                <br />
-                <br />
+              <div className="w-1/3 mr-4">
+                <label>Home Type *</label>
                 <select
                   className="p-2 border-b border-primary-color"
-                  id="houseType"
-                  name="houseType"
+                  name="homeType"
+                  value={formData.homeType}
+                  onChange={handleChange}
                   required
                 >
-                  <option value="house">House/Villa</option>
-                  <option value="apartment">Apartment</option>
-                  <option value="chalet">Chalet</option>
+                  <option value="Villa">Villa</option>
+                  <option value="Apartment">Apartment</option>
+                  <option value="Chalet">Chalet</option>
                 </select>
-              </form>
-              <form className="w-1/3 mr-4">
-                <label htmlFor="">Home Status *</label>
-                <br />
-                <br />
+              </div>
+
+              <div className="w-1/3 mr-4">
+                <label>Home Status *</label>
                 <select
                   className="p-2 border-b border-primary-color"
-                  id="houseStatus"
-                  name="houseStatus"
+                  name="homeStatus"
+                  value={formData.homeStatus}
+                  onChange={handleChange}
                   required
                 >
-                  <option value="finished">Finished</option>
-                  <option value="under">Under Contruction</option>
+                  <option value="FINISHED">Finished</option>
+                  <option value="UNDER_CONSTRUCTION">Under Construction</option>
                 </select>
-              </form>
-              <form className="w-1/3">
-                <label htmlFor="">Home Size *</label>
-                <br />
-                <br />
-                <select
+              </div>
+
+              <div className="w-1/3">
+                <label>Home Size (m²) *</label>
+                <input
                   className="p-2 border-b border-primary-color"
-                  id="houseType"
-                  name="houseType"
+                  name="homeSize"
+                  type="number"
+                  value={formData.homeSize}
+                  onChange={handleChange}
                   required
-                >
-                  <option value="less60">Less than 60 m2</option>
-                  <option value="between60-150">Between 60 - 150 m2</option>
-                  <option value="between150-300">Between 150 - 300 m2</option>
-                  <option value="more300">More than 300 m2</option>
-                </select>
-              </form>
+                />
+              </div>
             </div>
           </div>
+
           <div className="flex items-center overflow-hidden mb-10">
             <div className="mr-4">
-              <label className="" htmlFor="">
-                Number of levels *
-              </label>
+              <label>Number of Levels *</label>
               <input
                 className="outline-none border-b border-primary-color"
-                type="text"
-                placeholder="1.e.2 floors"
+                name="numberOfLevels"
+                type="number"
+                value={formData.numberOfLevels}
+                onChange={handleChange}
                 required
               />
             </div>
             <div className="mr-4">
-              <label className="mb-10" htmlFor="">
-                Number of rooms *
-              </label>
+              <label>Number of Rooms *</label>
               <input
                 className="outline-none border-b border-primary-color"
-                type="text"
-                placeholder="1.e.3 rooms"
+                name="numberOfRooms"
+                type="number"
+                value={formData.numberOfRooms}
+                onChange={handleChange}
                 required
               />
             </div>
             <div className="mr-4">
-              <label className="" htmlFor="">
-                Installation date *
-              </label>
+              <label>Installation Date *</label>
               <input
                 className="outline-none border-b border-primary-color"
+                name="installationDate"
                 type="date"
+                value={formData.installationDate}
+                onChange={handleChange}
                 required
               />
             </div>
           </div>
-          <ButtonNext setNumberPage={setNumberPage} />
-          <div className="text-center">page {numberPage}/3</div>
+
+          <ButtonNext
+            setNumberPage={setNumberPage}
+            formData={formData}
+            onSave={handleSave}
+          />
+          <div className="text-center">Page {numberPage}/3</div>
         </div>
       </div>
     </div>
   );
 };
+
 export default OfferCustomize;

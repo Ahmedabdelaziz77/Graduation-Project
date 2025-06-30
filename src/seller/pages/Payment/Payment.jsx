@@ -23,7 +23,7 @@ function Payment() {
             fontWeight="600"
             color="text.primary"
           >
-            E£0
+            E£1200
           </Typography>
         </Typography>
       </Card>

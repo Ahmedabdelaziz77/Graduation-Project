@@ -24,11 +24,14 @@ import { fetchCategorysWithProducts } from "./State/customer/categoryWithProduct
 import Spinner from "./components/Spinner";
 import MiniError from "./components/MiniError";
 import AiSmartSuggestions from "./customer/pages/AiSmartSuggestions/AiSmartSuggestions";
-
-// ✅ Toastify
+import AOS from "aos";
+import "aos/dist/aos.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import OCRPage from "./customer/pages/OCR/OCRPage";
+import ThankYou from "./customer/pages/offerCustomize/ThankYou";
+import Wishlist from "./customer/pages/WishList/Wishlist";
+import OTP from "./customer/pages/Auth/OTP";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -39,6 +42,10 @@ function App() {
   useEffect(() => {
     dispatch(fetchCategorysWithProducts());
   }, [dispatch]);
+
+  useEffect(() => {
+    AOS.init({ duration: 800 });
+  }, []);
 
   if (loading) {
     return (
@@ -69,8 +76,10 @@ function App() {
           <Route path="/login" element={<Auth />} />
           <Route path="/products" element={<Product />} />
           <Route path="/shop" element={<Product />} />
-          <Route path="/ocr" element={<OCRPage />} />
+          <Route path="/buy-products-from-image" element={<OCRPage />} />
           <Route path="/analyze-image" element={<AiSmartSuggestions />} />
+          <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/thank-you" element={<ThankYou />} />
           <Route path="/reviews/:productId" element={<Review />} />
           <Route
             path="/product-details/:categoryId/:name/:productId"
@@ -101,14 +110,7 @@ function App() {
               </RoleProtectedRoute>
             }
           />
-          <Route
-            path="/offerCustomize"
-            element={
-              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
-                <OfferCustomize />
-              </RoleProtectedRoute>
-            }
-          />
+          <Route path="/offerCustomize" element={<OfferCustomize />} />
           <Route
             path="/smartApp"
             element={

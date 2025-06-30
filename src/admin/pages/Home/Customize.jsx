@@ -138,6 +138,14 @@ function OffersDashboard() {
                   <Button size="small" color="error">
                     <Delete />
                   </Button>
+                  <Button
+                    size="small"
+                    color="success"
+                    variant="outlined"
+                    sx={{ ml: 1 }}
+                  >
+                    Done
+                  </Button>
                 </StyledTableCell>
               </StyledTableRow>
             ))}

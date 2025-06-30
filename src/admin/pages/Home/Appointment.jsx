@@ -97,8 +97,16 @@ function Appointment() {
                   >
                     Edit
                   </Button>
-                  <Button variant="outlined" size="small" color="error">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    color="error"
+                    sx={{ mr: 1 }}
+                  >
                     Delete
+                  </Button>
+                  <Button variant="contained" size="small" color="success">
+                    Change Status to Done
                   </Button>
                 </StyledTableCell>
               </StyledTableRow>

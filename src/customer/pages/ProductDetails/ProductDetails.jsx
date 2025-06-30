@@ -21,92 +21,93 @@ import SimilarProduct from "./SimilarProduct/SimilarProduct";
 import ReviewCard from "../Review/ReviewCard";
 import AddReviewForm from "./AddReviewForm";
 import { addToCart } from "../../../State/customer/cartSlice";
+import {
+  addToFavourites,
+  removeFromFavourites,
+  fetchFavourites,
+} from "../../../State/customer/favouriteSlice";
+import { toast } from "react-toastify";
+import { fetchProductFeedbacks } from "../../../State/customer/feedbackSlice";
 
 function ProductDetails() {
   const { productId, categoryId, name } = useParams();
   const dispatch = useDispatch();
-  const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
+
+  const [quantity, setQuantity] = useState(1);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [isInWishlist, setIsInWishlist] = useState(false);
+
   const {
     selectedProduct: product,
     loading,
     error,
   } = useSelector((state) => state.products);
+
+  const { list: favourites } = useSelector((state) => state.favourite);
   const { loading: cartLoading } = useSelector((state) => state.cart);
+  const { productFeedbacks, loading: feedbackLoading } = useSelector(
+    (state) => state.feedback
+  );
+
   useEffect(() => {
-    if (productId) dispatch(fetchProductById(productId));
+    if (productId) {
+      dispatch(fetchProductById(productId));
+      dispatch(fetchFavourites());
+      dispatch(fetchProductFeedbacks(productId));
+    }
   }, [dispatch, productId]);
 
-  if (loading) return <Spinner />;
-  if (error || !product) return <MiniError message="Failed to load product" />;
+  useEffect(() => {
+    if (product) {
+      setIsInWishlist(favourites.some((fav) => fav.id === product.id));
+    }
+  }, [favourites, product]);
 
-  const {
-    name: productName,
-    image,
-    price,
-    description,
-    category,
-    reviews = [
-      {
-        userName: "Ahmed Mostafa",
-        rating: 4.5,
-        comment: "Value for money! Highly recommended.",
-        createdAt: "2024-10-27T23:16:07.478333",
-        image:
-          "https://images.unsplash.com/photo-1606813902804-fd2ef464c229?auto=format&fit=crop&w=400&q=80",
-      },
-      {
-        userName: "Mona Ali",
-        rating: 4,
-        comment: "Loved the packaging and delivery speed!",
-        createdAt: "2024-09-10T14:30:00.000Z",
-        image: "",
-      },
-      {
-        userName: "Youssef",
-        rating: 5,
-        comment: "Best purchase this month. 🔥",
-        createdAt: "2024-08-05T08:45:00.000Z",
-        image:
-          "https://images.unsplash.com/photo-1579546929518-9e396f3cc809?auto=format&fit=crop&w=400&q=80",
-      },
-      {
-        userName: "Nour El Din",
-        rating: 3.5,
-        comment: "Good but could be cheaper.",
-        createdAt: "2024-07-15T11:15:00.000Z",
-        image: null,
-      },
-      {
-        userName: "Fatma",
-        rating: 5,
-        comment: "Perfect for my needs, thank you!",
-        createdAt: "2024-06-22T19:22:00.000Z",
-        image: "",
-      },
-      {
-        userName: "Ahmed Mostafa",
-        rating: 4.5,
-        comment: "Value for money! Highly recommended.",
-        createdAt: "2024-10-27T23:16:07.478333",
-        image:
-          "https://images.unsplash.com/photo-1606813902804-fd2ef464c229?auto=format&fit=crop&w=400&q=80",
-      },
-    ],
-  } = product;
+  const handleWishlistToggle = async () => {
+    if (!product) return;
+    try {
+      setWishlistLoading(true);
+      if (isInWishlist) {
+        await dispatch(removeFromFavourites(product.id)).unwrap();
+        toast.info("Removed from Wishlist 💔");
+      } else {
+        await dispatch(addToFavourites(product.id)).unwrap();
+        toast.success("Added to Wishlist ❤️");
+      }
+      await dispatch(fetchFavourites()).unwrap();
+    } catch (err) {
+      toast.error("Failed to update Wishlist");
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
 
-  const DiscountedPrice = Math.round(
-    price - (product.discountPrice / 100) * price
-  );
-  const firstFiveReviews = reviews.slice(0, 5);
   const handleAddToCart = async () => {
     try {
       await dispatch(addToCart({ productId, quantity })).unwrap();
       navigate("/cart");
     } catch (err) {
-      console.error("Failed to add to cart:", err);
+      toast.error("Failed to add to cart");
     }
   };
+
+  if (loading || !product) return <Spinner />;
+  if (error) return <MiniError message="Failed to load product" />;
+
+  const {
+    name: productName,
+    image,
+    price,
+    discountPrice,
+    description,
+    category,
+  } = product;
+
+  const discountedPrice = Math.round(price - (discountPrice / 100) * price);
+  const reviews = productFeedbacks;
+  const firstFiveReviews = reviews.slice(0, 5);
+
   return (
     <div className="px-5 lg:px-28 pt-10 animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -141,43 +142,42 @@ function ProductDetails() {
             <span className="text-sm text-gray-600">234 ratings</span>
           </div>
 
-          {/* Price */}
           <div className="flex items-center gap-4 text-3xl font-lora">
             <span className="text-gray-800">
-              E£{DiscountedPrice > 0 ? DiscountedPrice : price}
+              E£{discountedPrice > 0 ? discountedPrice : price}
             </span>
-            {DiscountedPrice > 0 && (
+            {discountedPrice > 0 && (
               <>
                 <span className="line-through text-gray-400 text-xl">
                   E£{price}
                 </span>
                 <span className="text-primary-color text-base font-semibold">
-                  -{product.discountPrice}%
+                  -{discountPrice}%
                 </span>
               </>
             )}
           </div>
+
           <p className="text-sm text-gray-500">
             Inclusive of all taxes. Free Shipping above E£500.
           </p>
 
-          {/* Features */}
           <div className="grid gap-3">
             {[
               [
-                <Shield key={1} sx={{ color: teal[500] }} />,
+                <Shield key="a" sx={{ color: teal[500] }} />,
                 "Authentic & Quality Assured",
               ],
               [
-                <WorkspacePremium key={2} sx={{ color: teal[500] }} />,
+                <WorkspacePremium key="b" sx={{ color: teal[500] }} />,
                 "100% money back guaranteed",
               ],
               [
-                <LocalShipping key={3} sx={{ color: teal[500] }} />,
+                <LocalShipping key="c" sx={{ color: teal[500] }} />,
                 "Free Shipping & Returns",
               ],
               [
-                <Wallet key={4} sx={{ color: teal[500] }} />,
+                <Wallet key="d" sx={{ color: teal[500] }} />,
                 "Pay on delivery might be available",
               ],
             ].map(([icon, text], idx) => (
@@ -220,13 +220,21 @@ function ProductDetails() {
             >
               Add To Cart
             </Button>
+
             <Button
               fullWidth
-              variant="outlined"
+              variant={isInWishlist ? "contained" : "outlined"}
+              color={isInWishlist ? "error" : "primary"}
               startIcon={<FavoriteBorder />}
               sx={{ py: 1.5 }}
+              onClick={handleWishlistToggle}
+              disabled={wishlistLoading}
             >
-              Wishlist
+              {wishlistLoading
+                ? "Loading..."
+                : isInWishlist
+                ? "In Wishlist - Remove"
+                : "Add to Wishlist"}
             </Button>
           </div>
 
@@ -239,9 +247,11 @@ function ProductDetails() {
           {/* Reviews */}
           <div className="mt-8 space-y-4">
             <h2 className="font-semibold text-lg">Customer Reviews</h2>
-            {firstFiveReviews.length > 0 ? (
-              firstFiveReviews.map((review, index) => (
-                <ReviewCard key={index} review={review} />
+            {feedbackLoading ? (
+              <p className="text-sm text-gray-500">Loading reviews...</p>
+            ) : firstFiveReviews.length > 0 ? (
+              firstFiveReviews.map((review) => (
+                <ReviewCard key={review.id} review={review} />
               ))
             ) : (
               <p className="text-sm text-gray-500">No reviews yet.</p>
@@ -261,7 +271,7 @@ function ProductDetails() {
           </div>
 
           {/* Add Review */}
-          <AddReviewForm />
+          <AddReviewForm productId={product.id} />
         </section>
       </div>
 

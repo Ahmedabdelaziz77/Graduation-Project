@@ -131,7 +131,9 @@ function ProductsTable() {
               <StyledTableCell>Title</StyledTableCell>
               <StyledTableCell align="right">Price</StyledTableCell>
               <StyledTableCell align="right">Selling Price</StyledTableCell>
-              <StyledTableCell align="right">Version</StyledTableCell>
+              <StyledTableCell align="right">
+                Hardware Specifications
+              </StyledTableCell>
               <StyledTableCell align="right">Stock</StyledTableCell>
               <StyledTableCell align="center">Actions</StyledTableCell>
             </TableRow>
@@ -225,7 +227,7 @@ function ProductsTable() {
                 fullWidth
               />
               <TextField
-                label="Version"
+                label="hardwareSpecifications"
                 value={editRow.hardwareSpecifications}
                 onChange={(e) =>
                   handleEditChange("hardwareSpecifications", e.target.value)

@@ -1,77 +1,125 @@
-import { Favorite, RemoveRedEye } from "@mui/icons-material";
+import { Favorite, FavoriteBorder, RemoveRedEye } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { IconButton, Tooltip } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToFavourites,
+  removeFromFavourites,
+} from "../../../State/customer/favouriteSlice";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 function ProductCard({ product }) {
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   const { name, image, price, sellingPrice, discountPrice, category, id } =
     product;
 
-  const hasDiscount = discountPrice > 0;
-  const showDiscountBadge = hasDiscount && price > sellingPrice;
+  const hasDiscount = discountPrice > 0 && price > sellingPrice;
   const finalPrice = hasDiscount ? sellingPrice : price;
-  const percentageOff = Math.round(((price - sellingPrice) / price) * 100);
+  const percentageOff = hasDiscount
+    ? Math.round(((price - sellingPrice) / price) * 100)
+    : 0;
+
+  const { list: favourites } = useSelector((state) => state.favourite);
+  const initiallyInWishlist = favourites?.some((fav) => fav.id === id);
+
+  const [isInWishlist, setIsInWishlist] = useState(initiallyInWishlist);
+  const [loading, setLoading] = useState(false);
 
   const handleViewDetails = () => {
-    navigate(`/product-details/${category.id}/${name}/${id}`);
+    navigate(`/product-details/${category?.id}/${name}/${id}`);
+  };
+
+  const handleAddToFavourite = async () => {
+    try {
+      setLoading(true);
+      await dispatch(addToFavourites(id)).unwrap();
+      toast.success("Added to Wishlist ❤️");
+      setIsInWishlist(true); // Immediately hide the button
+    } catch (err) {
+      toast.error("Failed to add to wishlist");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveFromFavourite = async () => {
+    try {
+      setLoading(true);
+      await dispatch(removeFromFavourites(id)).unwrap();
+      toast.info("Removed from Wishlist 💔");
+      setIsInWishlist(false); // Re-enable add button
+    } catch (err) {
+      toast.error("Failed to remove from wishlist");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="group relative w-[250px] border border-gray-200 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition duration-300">
-      {/* Product Image with Overlay */}
-      <div className="relative h-[300px] w-full overflow-hidden">
+      {/* Product Image */}
+      <div className="relative h-[300px] bg-white">
         <img
-          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
           src={image}
           alt={name}
+          className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
         />
 
-        {/* Hover Action Icons */}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col-reverse justify-center items-center gap-4">
-          <button
-            onClick={() => alert("Add to favorites")}
-            className="py-1 px-2 bg-white rounded shadow hover:bg-gray-100 transition"
-          >
-            <Favorite
-              className="text-primary-color"
-              sx={{ width: 25, height: 25 }}
-            />
-          </button>
-          <button
+        {/* Hover Actions */}
+        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col justify-center items-center gap-4 transition-opacity duration-300">
+          {!isInWishlist ? (
+            <Tooltip title="Add to Wishlist">
+              <IconButton
+                onClick={handleAddToFavourite}
+                disabled={loading}
+                className="bg-white hover:bg-gray-100 shadow"
+              >
+                <FavoriteBorder sx={{ color: "#008080", fontSize: 24 }} />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Remove from Wishlist">
+              <IconButton
+                onClick={handleRemoveFromFavourite}
+                disabled={loading}
+                className="bg-white hover:bg-gray-100 shadow"
+              >
+                <Favorite sx={{ color: "red", fontSize: 24 }} />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          <IconButton
             onClick={handleViewDetails}
-            className="py-1 px-2 bg-primary-color rounded shadow hover:bg-opacity-80 transition"
+            className="p-2 bg-primary-color rounded-full shadow hover:bg-opacity-80"
           >
-            <RemoveRedEye
-              className="text-white"
-              sx={{ width: 25, height: 25 }}
-            />
-          </button>
+            <RemoveRedEye className="text-white" sx={{ fontSize: 24 }} />
+          </IconButton>
         </div>
 
         {/* Discount Badge */}
-        {showDiscountBadge && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded shadow-md animate-bounce">
+        {hasDiscount && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded animate-pulse shadow">
             {percentageOff}% OFF
           </div>
         )}
       </div>
 
       {/* Product Info */}
-      <div className="text-center border-t border-gray-200 p-4 group-hover:translate-y-1 transition-transform duration-300">
-        <h3 className="text-sm text-gray-700 font-medium line-clamp-2">
+      <div className="text-center border-t px-4 py-3 bg-white">
+        <h3 className="text-sm font-semibold text-gray-800 line-clamp-2">
           {name}
         </h3>
-
-        <div className="flex items-center justify-center gap-2 mt-1">
-          <span className="text-lg font-bold text-black">
-            ${finalPrice.toFixed(2)}
+        <div className="flex justify-center items-center gap-2 mt-2">
+          <span className="text-lg font-bold text-primary-color">
+            EGP {finalPrice.toFixed(2)}
           </span>
           {hasDiscount && (
-            <>
-              <span className="text-sm line-through text-gray-500">
-                ${price.toFixed(2)}
-              </span>
-            </>
+            <span className="text-sm line-through text-gray-400">
+              EGP {price.toFixed(2)}
+            </span>
           )}
         </div>
       </div>

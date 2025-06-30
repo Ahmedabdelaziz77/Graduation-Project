@@ -13,6 +13,10 @@ import couponSlice from "./couponSlice";
 import ocrSlice from "./ocrSlice";
 import addressSlice from "./customer/addressSlice";
 import aiSlice from "./customer/aiSlice";
+import offersSlice from "./customer/offersSlice";
+import favouriteSlice from "./customer/favouriteSlice";
+import feedbackSlice from "./customer/feedbackSlice";
+import appointmentsSlice from "./customer/appointmentsSlice";
 
 const rootReducer = combineReducers({
   auth: authSlice,
@@ -28,6 +32,10 @@ const rootReducer = combineReducers({
   order: orderSlice,
   address: addressSlice,
   ai: aiSlice,
+  offers: offersSlice,
+  favourite: favouriteSlice,
+  feedback: feedbackSlice,
+  appointments: appointmentsSlice,
 });
 
 const store = configureStore({

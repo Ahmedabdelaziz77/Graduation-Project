@@ -96,7 +96,7 @@ function Navbar({ categories }) {
                   src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFU7U2h0umyF0P6E_yhTX45sGgPEQAbGaJ4g&s"
                 />
                 <Typography className="font-semibold hidden lg:block">
-                  My Account
+                  Ahmed
                 </Typography>
               </Button>
 
@@ -118,7 +118,7 @@ function Navbar({ categories }) {
             </Button>
           )}
 
-          <IconButton>
+          <IconButton onClick={() => navigate("/wishlist")}>
             <FavoriteBorder sx={{ fontSize: 29 }} />
           </IconButton>
 
@@ -170,15 +170,12 @@ function Navbar({ categories }) {
                 {categories.map((category) => (
                   <Typography
                     key={category.id}
-                    className={`cursor-pointer py-2 px-4 hover:text-primary-color transition-all duration-150 ease-in-out ${
+                    className={`py-2 px-4 hover:text-primary-color transition-all duration-150 ease-in-out ${
                       hoveredCategory?.name === category.name
                         ? "text-primary-color border-b-black border-b-[2px]"
                         : ""
                     }`}
                     onMouseEnter={() => handleMouseEnter(category)}
-                    onClick={() =>
-                      navigate(`/products?category=${category.name}`)
-                    }
                   >
                     {category.name}
                   </Typography>

@@ -1,15 +1,38 @@
 import { Delete } from "@mui/icons-material";
 import { Avatar, Box, IconButton, Rating } from "@mui/material";
 import { red } from "@mui/material/colors";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  deleteFeedback,
+  fetchProductFeedbacks,
+} from "../../../State/customer/feedbackSlice";
+import { toast } from "react-toastify";
 
-function ReviewCard({ review }) {
+function ReviewCard({ review, productId }) {
+  const dispatch = useDispatch();
   const {
-    name = "Anonymous",
+    user,
     rating = 0,
     comment = "",
     createdAt = new Date().toISOString(),
     image = "",
+    id: reviewId,
   } = review || {};
+
+  const name = user ? `${user.firstname} ${user.lastname}` : "Anonymous";
+
+  const { roles } = useSelector((state) => state.auth);
+  const isAdmin = roles.includes("ROLE_ADMIN");
+
+  const handleDelete = async () => {
+    try {
+      await dispatch(deleteFeedback(reviewId)).unwrap();
+      toast.success("Review deleted successfully");
+      await dispatch(fetchProductFeedbacks(productId));
+    } catch (error) {
+      toast.error("Failed to delete review");
+    }
+  };
 
   return (
     <div className="flex justify-between border rounded-lg p-4 shadow-sm">
@@ -41,9 +64,12 @@ function ReviewCard({ review }) {
           </div>
         </div>
       </div>
-      <IconButton>
-        <Delete sx={{ color: red[700] }} />
-      </IconButton>
+
+      {isAdmin && (
+        <IconButton onClick={handleDelete}>
+          <Delete sx={{ color: red[700] }} />
+        </IconButton>
+      )}
     </div>
   );
 }

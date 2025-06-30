@@ -1,39 +1,67 @@
 import { useState } from "react";
 import { TextField, Button, Rating } from "@mui/material";
 import { motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+import {
+  addFeedback,
+  fetchProductFeedbacks,
+} from "../../../State/customer/feedbackSlice";
+import { toast } from "react-toastify";
+import { uploadToCloudinary } from "../../../utils/uploadToCloudinary";
 
-function AddReviewForm({ onAddReview }) {
+function AddReviewForm({ productId }) {
+  const dispatch = useDispatch();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [image, setImage] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result);
-        setPreviewUrl(URL.createObjectURL(file));
-      };
-      reader.readAsDataURL(file);
+      setImageFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!comment || rating === 0) return;
-    onAddReview({
-      userName: "You",
-      rating,
-      comment,
-      createdAt: new Date().toISOString(),
-      image,
-    });
-    setRating(0);
-    setComment("");
-    setImage(null);
-    setPreviewUrl(null);
+    if (!comment || rating === 0)
+      return toast.warn("Please enter a comment and rating!");
+    setSubmitting(true);
+
+    try {
+      let imageUrl = null;
+      if (imageFile) {
+        imageUrl = await uploadToCloudinary(imageFile);
+        if (!imageUrl) throw new Error("Image upload failed.");
+      }
+
+      await dispatch(
+        addFeedback({
+          productId,
+          feedback: {
+            rating,
+            comment,
+            image: imageUrl,
+          },
+        })
+      ).unwrap();
+
+      await dispatch(fetchProductFeedbacks(productId));
+      toast.success("Review added successfully!");
+
+      // Reset form
+      setRating(0);
+      setComment("");
+      setImageFile(null);
+      setPreviewUrl(null);
+    } catch (err) {
+      toast.error("Failed to submit review");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -46,13 +74,11 @@ function AddReviewForm({ onAddReview }) {
       <h2 className="text-xl font-bold text-gray-800 mb-4">Add Your Review</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Rating
-            value={rating}
-            onChange={(e, newValue) => setRating(newValue)}
-            precision={0.5}
-          />
-        </div>
+        <Rating
+          value={rating}
+          onChange={(e, newValue) => setRating(newValue)}
+          precision={1}
+        />
 
         <TextField
           fullWidth
@@ -82,6 +108,7 @@ function AddReviewForm({ onAddReview }) {
         <Button
           type="submit"
           variant="contained"
+          disabled={submitting}
           sx={{
             py: 1.2,
             px: 4,
@@ -93,7 +120,7 @@ function AddReviewForm({ onAddReview }) {
             },
           }}
         >
-          Submit Review
+          {submitting ? "Submitting..." : "Submit Review"}
         </Button>
       </form>
     </motion.div>

@@ -42,7 +42,7 @@ const Dashboard = () => {
     { title: "Total Sales", value: "$125,400", change: "+12%" },
     { title: "Orders", value: "1,243", change: "+8%" },
     { title: "Devices Sold", value: "3,410", change: "+16%" },
-    { title: "Store Visitors", value: "8,900", change: "+5%" },
+    { title: "Avg. Order Value", value: "$102", change: "+7%" },
   ];
 
   const lineData = {

@@ -4,9 +4,9 @@ import CategoryCard from "./CategoryCard";
 import { fetchCategories } from "../../../../State/customer/categorySlice";
 import SpinnerMini from "../../../../components/SpinnerMini";
 import MiniError from "../../../../components/MiniError";
+
 function Category() {
   const dispatch = useAppDispatch();
-
   const {
     list: categories,
     loading,
@@ -23,6 +23,7 @@ function Category() {
         <SpinnerMini />
       </div>
     );
+
   if (error)
     return (
       <div className="flex flex-col justify-center items-center h-32 text-red-500">
@@ -30,11 +31,14 @@ function Category() {
         <p className="mt-2">Error while showing categories</p>
       </div>
     );
+
   return (
-    <div className="flex flex-wrap justify-between py-5 lg:px-20 border-b">
-      {categories.map((category) => (
-        <CategoryCard key={category.id} category={category} />
-      ))}
+    <div className="py-6 px-4 lg:px-20 pl-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-20">
+        {categories.map((category) => (
+          <CategoryCard key={category.id} category={category} />
+        ))}
+      </div>
     </div>
   );
 }
