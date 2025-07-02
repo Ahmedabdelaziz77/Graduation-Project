@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://switchyard.proxy.rlwy.net:16154/railway
+    username: postgres
+    password: RNbamtARxItqfsoRxrlfZJYZixpFHVGp
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+  servlet:
+    multipart:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: mohsen03y@gmail.com
+    password: ijanjwshigplidop
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            required: true
+
+
+logging:
+  level:
+    root: debug
+    org.springframework.security: debug
+    org.hibernate.SQL: debug
+stripe:
+  secret:
+    key: sk_test_51RYaQ7PSlFFgKCumtZ62rbM4mug4uguMtByvMlts480JyAZUnG9sFfA9bHsCbRzx9l9WV6JZP4w10F6ghiEsIBlp00AzGKQ5g4
+  webhook:
+    secret: whsec_Ys6WXvyQxili7BdWV5i5Awi4tWJNxKBR
+server:
+  port: 8080
