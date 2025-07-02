@@ -20,6 +20,7 @@ import { calculateOrderAmounts } from "../../../Utils/priceCalculator";
 import { fetchUserAddresses } from "../../../State/customer/addressSlice";
 import Spinner from "../../../components/Spinner";
 import MiniError from "../../../components/MiniError";
+import { createCheckoutSession } from "../../../State/customer/paymentSlice";
 
 const paymentGatewayList = [
   {
@@ -29,6 +30,16 @@ const paymentGatewayList = [
   },
 ];
 
+const DEFAULT_FAKE_ADDRESS = {
+  address: "Tahrir Street",
+  city: "Cairo",
+  state: "Cairo",
+  locality: "Downtown",
+  pinCode: "11511",
+  name: "Guest User",
+  mobile: "01234567890",
+};
+
 function Checkout() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -36,17 +47,25 @@ function Checkout() {
   const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("CREDIT_CARD");
   const [modalOpen, setModalOpen] = useState(false);
+  const [redirectingToPayment, setRedirectingToPayment] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
   });
+
   const { list: addresses, loading: addressLoading } = useSelector(
     (state) => state.address
   );
   const { items } = useSelector((state) => state.cart);
   const { validationResult } = useSelector((state) => state.coupon);
   const { loading: orderLoading } = useSelector((state) => state.order);
+
+  useEffect(() => {
+    if (!items || items.length === 0) {
+      navigate("/cart", { replace: true });
+    }
+  }, [items, navigate]);
 
   useEffect(() => {
     dispatch(fetchUserAddresses());
@@ -61,20 +80,15 @@ function Checkout() {
   };
 
   const handleCheckout = async () => {
-    if (!addresses.length) {
-      return setSnackbar({
-        open: true,
-        message: "Please add a shipping address.",
-        severity: "error",
-      });
-    }
+    const selectedAddress = addresses.length
+      ? addresses[selectedAddressIndex]
+      : DEFAULT_FAKE_ADDRESS;
 
-    const selectedAddress = addresses[selectedAddressIndex];
     const shippingAddress = `${selectedAddress.address}, ${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.locality}, ${selectedAddress.pinCode}`;
 
     const { originalAmount, discountAmount, totalAmount } =
       calculateOrderAmounts(items, validationResult);
-    console.log(originalAmount, discountAmount, totalAmount);
+
     const orderData = {
       shippingAddress,
       paymentMethod,
@@ -85,16 +99,40 @@ function Checkout() {
       discountAmount,
       totalAmount: originalAmount,
     };
+
     const result = await dispatch(createOrder(orderData));
 
     if (createOrder.fulfilled.match(result)) {
-      setSnackbar({
-        open: true,
-        message: "Order placed successfully!",
-        severity: "success",
-      });
+      const orderId = result.payload?.id;
+      const currency = "egp";
+
+      setRedirectingToPayment(true);
+
+      const stripeResult = await dispatch(
+        createCheckoutSession({ orderId, amount: originalAmount, currency })
+      );
+
+      if (createCheckoutSession.fulfilled.match(stripeResult)) {
+        setSnackbar({
+          open: true,
+          message: "Payment session created! Redirecting...",
+          severity: "success",
+        });
+
+        setTimeout(() => {
+          window.location.href = stripeResult.payload.url;
+        }, 1200);
+        return;
+      } else {
+        setRedirectingToPayment(false);
+        setSnackbar({
+          open: true,
+          message: "Failed to initiate payment session.",
+          severity: "error",
+        });
+      }
+
       dispatch(clearCart());
-      // navigate("/order-summary");
     } else {
       setSnackbar({
         open: true,
@@ -115,14 +153,12 @@ function Checkout() {
     p: 4,
   };
 
-  if (addressLoading || orderLoading) return <Spinner />;
-  if (!addresses)
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen space-y-5">
-        <MiniError />
-        <p>No address found.</p>;
-      </div>
-    );
+  if (redirectingToPayment || addressLoading || orderLoading)
+    return <Spinner />;
+
+  const displayAddresses = addresses.length
+    ? addresses
+    : [DEFAULT_FAKE_ADDRESS];
 
   return (
     <>
@@ -138,36 +174,23 @@ function Checkout() {
 
             <div className="text-xs font-medium space-y-5">
               <p>Saved Addresses</p>
-              {addresses.length === 0 ? (
-                <div className="border p-4 rounded text-center text-gray-500">
-                  <p>No saved addresses found.</p>
-                  <Button
-                    variant="outlined"
-                    onClick={() => setModalOpen(true)}
-                    sx={{ mt: 2 }}
-                  >
-                    Add New Address
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {addresses.map((address, index) => (
-                    <AddressCard
-                      key={index}
-                      address={{
-                        street: address.address,
-                        city: address.city,
-                        state: address.state,
-                        zipcode: address.pinCode,
-                      }}
-                      fullName={address.name}
-                      mobile={address.mobile}
-                      checked={index === selectedAddressIndex}
-                      onSelect={() => handleAddressSelect(index)}
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="space-y-3">
+                {displayAddresses.map((address, index) => (
+                  <AddressCard
+                    key={index}
+                    address={{
+                      street: address.address,
+                      city: address.city,
+                      state: address.state,
+                      zipcode: address.pinCode,
+                    }}
+                    fullName={address.name}
+                    mobile={address.mobile}
+                    checked={index === selectedAddressIndex}
+                    onSelect={() => handleAddressSelect(index)}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
@@ -207,9 +230,11 @@ function Checkout() {
                   variant="contained"
                   sx={{ py: "11px" }}
                   onClick={handleCheckout}
-                  disabled={orderLoading}
+                  disabled={orderLoading || redirectingToPayment}
                 >
-                  {orderLoading ? "Placing Order..." : "Checkout"}
+                  {orderLoading || redirectingToPayment
+                    ? "Placing Order..."
+                    : "Checkout"}
                 </Button>
               </div>
             </div>

@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -12,8 +13,17 @@ import {
   Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { tableCellClasses } from "@mui/material/TableCell";
+import { useDispatch, useSelector } from "react-redux";
+
+import Spinner from "../../../components/Spinner";
+import { toast } from "react-toastify";
+import moment from "moment";
+import {
+  fetchAllAppointments,
+  updateAppointmentStatus,
+} from "../../../State/customer/appointmentsSlice";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -35,48 +45,58 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const appointments = [
-  {
-    appointment_id: 1,
-    user_id: 101,
-    services: ["Haircut", "Shampoo"],
-  },
-  {
-    appointment_id: 2,
-    user_id: 102,
-    services: ["Manicure"],
-  },
-  {
-    appointment_id: 3,
-    user_id: 103,
-    services: ["Facial", "Massage", "Pedicure"],
-  },
-];
-
 function Appointment() {
-  const [data, setData] = useState(appointments);
+  const dispatch = useDispatch();
+  const { all, loading } = useSelector((state) => state.appointments);
+  const [updatingId, setUpdatingId] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchAllAppointments());
+  }, [dispatch]);
+
+  const handleChangeStatus = async (appointmentId) => {
+    try {
+      setUpdatingId(appointmentId);
+      await dispatch(
+        updateAppointmentStatus({ appointmentId, status: "DONE" })
+      ).unwrap();
+      toast.success("Status updated to DONE");
+    } catch (err) {
+      toast.error("Failed to update status");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  if (loading) return <Spinner />;
 
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h5" fontWeight="bold" color="primary" gutterBottom>
-        Appointments
+        All Appointments
       </Typography>
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 900 }} aria-label="appointments table">
           <TableHead>
             <TableRow>
-              <StyledTableCell>Appointment ID</StyledTableCell>
-              <StyledTableCell>User ID</StyledTableCell>
+              <StyledTableCell>ID</StyledTableCell>
+              <StyledTableCell>User Name</StyledTableCell>
+              <StyledTableCell>Email</StyledTableCell>
               <StyledTableCell>Services</StyledTableCell>
+              <StyledTableCell>Status</StyledTableCell>
+              <StyledTableCell>Created At</StyledTableCell>
               <StyledTableCell align="center">Actions</StyledTableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((appointment) => (
-              <StyledTableRow key={appointment.appointment_id}>
-                <StyledTableCell>{appointment.appointment_id}</StyledTableCell>
-                <StyledTableCell>{appointment.user_id}</StyledTableCell>
+            {all.map((appointment) => (
+              <StyledTableRow key={appointment.id}>
+                <StyledTableCell>{appointment.id}</StyledTableCell>
+                <StyledTableCell>
+                  {appointment.user.firstname} {appointment.user.lastname}
+                </StyledTableCell>
+                <StyledTableCell>{appointment.user.email}</StyledTableCell>
                 <StyledTableCell>
                   {appointment.services.map((service, index) => (
                     <Chip
@@ -88,25 +108,27 @@ function Appointment() {
                     />
                   ))}
                 </StyledTableCell>
+                <StyledTableCell>{appointment.status}</StyledTableCell>
+                <StyledTableCell>
+                  {moment(appointment.createdAt).format("YYYY-MM-DD HH:mm")}
+                </StyledTableCell>
                 <StyledTableCell align="center">
                   <Button
-                    variant="outlined"
+                    variant="contained"
                     size="small"
-                    color="primary"
-                    sx={{ mr: 1 }}
+                    color="success"
+                    disabled={
+                      appointment.status === "DONE" ||
+                      updatingId === appointment.id
+                    }
+                    onClick={() => handleChangeStatus(appointment.id)}
+                    sx={{ minWidth: 160 }}
                   >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    color="error"
-                    sx={{ mr: 1 }}
-                  >
-                    Delete
-                  </Button>
-                  <Button variant="contained" size="small" color="success">
-                    Change Status to Done
+                    {updatingId === appointment.id ? (
+                      <CircularProgress size={18} sx={{ color: "#fff" }} />
+                    ) : (
+                      "Mark as Done"
+                    )}
                   </Button>
                 </StyledTableCell>
               </StyledTableRow>

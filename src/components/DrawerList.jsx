@@ -8,22 +8,30 @@ import {
   Typography,
 } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { logout } from "../State/authSlice";
 
 function DrawerList({ menu, menu2, toggleDrawer }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const renderSection = (items) =>
     items.map((item) => {
       const isActive = location.pathname === item.path;
 
+      const handleClick = () => {
+        if (item.name === "Logout") {
+          dispatch(logout());
+        }
+        navigate(item.path);
+        toggleDrawer();
+      };
+
       return (
         <ListItemButton
           key={item.name}
-          onClick={() => {
-            navigate(item.path);
-            toggleDrawer();
-          }}
+          onClick={handleClick}
           selected={isActive}
           sx={{
             px: 2.5,

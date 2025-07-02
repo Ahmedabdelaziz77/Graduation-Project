@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Dialog,
@@ -6,9 +6,9 @@ import {
   DialogContent,
   DialogActions,
   Typography,
+  CircularProgress,
 } from "@mui/material";
-import { Delete, Visibility } from "@mui/icons-material";
-
+import { Visibility } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -17,6 +17,13 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import {
+  fetchOffers,
+  updateOfferStatus,
+} from "../../../State/customer/offersSlice";
+import Spinner from "../../../components/Spinner";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -38,56 +45,16 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const offers = [
-  {
-    id: 1,
-    name: "John Doe",
-    first_name: "John",
-    last_name: "Doe",
-    email: "john@example.com",
-    mobile: "1234567890",
-    homeType: "House",
-    home_size: 240,
-    number_of_levels: 2,
-    smart_sensors: ["Smoke", "Temperature", "Motion"],
-    optional_features: {
-      security: true,
-      garden: false,
-      solar: true,
-    },
-    status: "Finished",
-    rooms: 5,
-    installDate: "2025-06-15",
-    address: "123 Main St",
-    requirements: "Solar panel setup and smart sensors",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    first_name: "Jane",
-    last_name: "Smith",
-    email: "jane@example.com",
-    mobile: "0987654321",
-    homeType: "Apartment",
-    home_size: 130,
-    number_of_levels: 1,
-    smart_sensors: ["Smoke"],
-    optional_features: {
-      security: false,
-      garden: true,
-      solar: false,
-    },
-    status: "Under Construction",
-    rooms: 3,
-    installDate: "2025-07-01",
-    address: "456 Park Ave",
-    requirements: "Smart thermostat only",
-  },
-];
-
 function OffersDashboard() {
+  const dispatch = useDispatch();
+  const { offers, loading } = useSelector((state) => state.offers);
   const [open, setOpen] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState(null);
+  const [updatingId, setUpdatingId] = useState(null);
+
+  useEffect(() => {
+    dispatch(fetchOffers());
+  }, [dispatch]);
 
   const handleView = (offer) => {
     setSelectedOffer(offer);
@@ -99,6 +66,23 @@ function OffersDashboard() {
     setSelectedOffer(null);
   };
 
+  const handleStatusChange = async (id) => {
+    try {
+      setUpdatingId(id);
+      await dispatch(
+        updateOfferStatus({ offerId: id, status: "DONE" })
+      ).unwrap();
+      toast.success("Status updated successfully!");
+      dispatch(fetchOffers());
+    } catch (err) {
+      toast.error("Failed to update status");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  if (loading) return <Spinner />;
+  console.log(offers);
   return (
     <>
       <TableContainer component={Paper} sx={{ mt: 4 }}>
@@ -120,13 +104,21 @@ function OffersDashboard() {
             {offers.map((offer) => (
               <StyledTableRow key={offer.id}>
                 <StyledTableCell>{offer.id}</StyledTableCell>
-                <StyledTableCell>{offer.name}</StyledTableCell>
-                <StyledTableCell>{offer.email}</StyledTableCell>
-                <StyledTableCell>{offer.mobile}</StyledTableCell>
-                <StyledTableCell>{offer.homeType}</StyledTableCell>
-                <StyledTableCell>{offer.status}</StyledTableCell>
-                <StyledTableCell>{offer.rooms}</StyledTableCell>
-                <StyledTableCell>{offer.installDate}</StyledTableCell>
+                <StyledTableCell>
+                  {offer.firstName || "—"} {offer.lastName || ""}
+                </StyledTableCell>
+                <StyledTableCell>{offer.email || "—"}</StyledTableCell>
+                <StyledTableCell>{offer.mobile || "—"}</StyledTableCell>
+                <StyledTableCell>{offer.homeType || "—"}</StyledTableCell>
+                <StyledTableCell>{offer.status || "—"}</StyledTableCell>
+                <StyledTableCell>{offer.numberOfRooms || "—"}</StyledTableCell>
+                <StyledTableCell>
+                  {offer.installationDate
+                    ? new Date(offer.installationDate)
+                        .toISOString()
+                        .split("T")[0]
+                    : "—"}
+                </StyledTableCell>
                 <StyledTableCell align="center">
                   <Button
                     size="small"
@@ -135,16 +127,21 @@ function OffersDashboard() {
                   >
                     <Visibility />
                   </Button>
-                  <Button size="small" color="error">
-                    <Delete />
-                  </Button>
                   <Button
                     size="small"
                     color="success"
                     variant="outlined"
                     sx={{ ml: 1 }}
+                    disabled={
+                      updatingId === offer.id || offer.status === "DONE"
+                    }
+                    onClick={() => handleStatusChange(offer.id)}
                   >
-                    Done
+                    {updatingId === offer.id ? (
+                      <CircularProgress size={18} />
+                    ) : (
+                      "Mark Done"
+                    )}
                   </Button>
                 </StyledTableCell>
               </StyledTableRow>
@@ -153,19 +150,15 @@ function OffersDashboard() {
         </Table>
       </TableContainer>
 
+      {/* Dialog for full details */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>Offer Details</DialogTitle>
         <DialogContent dividers>
           {selectedOffer && (
             <>
               <Typography variant="body1">
-                <strong>Name:</strong> {selectedOffer.name}
-              </Typography>
-              <Typography variant="body1">
-                <strong>First Name:</strong> {selectedOffer.first_name}
-              </Typography>
-              <Typography variant="body1">
-                <strong>Last Name:</strong> {selectedOffer.last_name}
+                <strong>Name:</strong> {selectedOffer.firstName}{" "}
+                {selectedOffer.lastName}
               </Typography>
               <Typography variant="body1">
                 <strong>Email:</strong> {selectedOffer.email}
@@ -174,38 +167,47 @@ function OffersDashboard() {
                 <strong>Mobile:</strong> {selectedOffer.mobile}
               </Typography>
               <Typography variant="body1">
-                <strong>Address:</strong> {selectedOffer.address}
+                <strong>Address:</strong>{" "}
+                {selectedOffer.address
+                  ? `${selectedOffer.address.street}, ${selectedOffer.address.city}, ${selectedOffer.address.state} ${selectedOffer.address.zipcode}`
+                  : "—"}
               </Typography>
               <Typography variant="body1">
-                <strong>Home Type:</strong> {selectedOffer.homeType}
+                <strong>Home Type:</strong> {selectedOffer.homeType || "—"}
               </Typography>
               <Typography variant="body1">
-                <strong>Status:</strong> {selectedOffer.status}
+                <strong>Status:</strong> {selectedOffer.status || "—"}
               </Typography>
               <Typography variant="body1">
-                <strong>Rooms:</strong> {selectedOffer.rooms}
+                <strong>Rooms:</strong> {selectedOffer.numberOfRooms || "—"}
               </Typography>
               <Typography variant="body1">
-                <strong>Installation Date:</strong> {selectedOffer.installDate}
+                <strong>Installation Date:</strong>{" "}
+                {selectedOffer.installationDate
+                  ? new Date(selectedOffer.installationDate)
+                      .toISOString()
+                      .split("T")[0]
+                  : "—"}
               </Typography>
               <Typography variant="body1">
-                <strong>Requirements:</strong> {selectedOffer.requirements}
+                <strong>Requirements:</strong>{" "}
+                {selectedOffer.requirements || "—"}
               </Typography>
               <Typography variant="body1">
-                <strong>Home Size:</strong> {selectedOffer.home_size} m²
+                <strong>Home Size:</strong> {selectedOffer.homeSize || "—"} m²
               </Typography>
               <Typography variant="body1">
                 <strong>Number of Levels:</strong>{" "}
-                {selectedOffer.number_of_levels}
+                {selectedOffer.numberOfLevels || "—"}
               </Typography>
               <Typography variant="body1">
                 <strong>Smart Sensors:</strong>{" "}
-                {selectedOffer.smart_sensors?.join(", ") || "—"}
+                {selectedOffer.smartSensors?.join(", ") || "—"}
               </Typography>
               <Typography variant="body1">
                 <strong>Optional Features:</strong>{" "}
-                {selectedOffer.optional_features
-                  ? JSON.stringify(selectedOffer.optional_features, null, 2)
+                {selectedOffer.optionalFeatures
+                  ? JSON.stringify(selectedOffer.optionalFeatures, null, 2)
                   : "—"}
               </Typography>
             </>

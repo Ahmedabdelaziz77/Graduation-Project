@@ -17,7 +17,7 @@ function SellerRoutes() {
         <Route path="/add-product" element={<AddProduct />} />
         <Route path="/account" element={<Profile />} />
         <Route path="/payment" element={<Payment />} />
-        <Route path="/transaction" element={<Transaction />} />
+        {/* <Route path="/transaction" element={<Transaction />} /> */}
       </Routes>
     </div>
   );

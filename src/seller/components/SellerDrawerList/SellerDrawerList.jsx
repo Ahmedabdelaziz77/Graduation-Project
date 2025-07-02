@@ -38,12 +38,12 @@ const menu = [
     icon: <AccountBalanceWalletIcon className="text-primary-color" />,
     activeIcon: <AccountBalanceWalletIcon className="text-white" />,
   },
-  {
-    name: "Transaction",
-    path: "/seller/transaction",
-    icon: <ReceiptIcon className="text-primary-color" />,
-    activeIcon: <ReceiptIcon className="text-white" />,
-  },
+  // {
+  //   name: "Transaction",
+  //   path: "/seller/transaction",
+  //   icon: <ReceiptIcon className="text-primary-color" />,
+  //   activeIcon: <ReceiptIcon className="text-white" />,
+  // },
 ];
 const menu2 = [
   {

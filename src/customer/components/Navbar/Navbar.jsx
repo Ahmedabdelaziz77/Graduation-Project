@@ -81,14 +81,14 @@ function Navbar({ categories }) {
         </Box>
 
         <Box className="flex gap-1 lg:gap-6 items-center">
-          <IconButton>
+          <IconButton onClick={() => navigate("/search")}>
             <SearchIcon />
           </IconButton>
-
           {isLoggedin ? (
             <>
               <Button
-                onClick={() => navigate("/account/orders")}
+                onClick={isUser ? () => navigate("/account/orders") : undefined}
+                disabled={!isUser}
                 className="flex items-center gap-2"
               >
                 <Avatar
@@ -117,14 +117,19 @@ function Navbar({ categories }) {
               Login
             </Button>
           )}
-
-          <IconButton onClick={() => navigate("/wishlist")}>
-            <FavoriteBorder sx={{ fontSize: 29 }} />
-          </IconButton>
-
-          <IconButton onClick={() => navigate("/cart")}>
-            <AddShoppingCart className="text-gray-700" sx={{ fontSize: 29 }} />
-          </IconButton>
+          {isUser && (
+            <>
+              <IconButton onClick={() => navigate("/wishlist")}>
+                <FavoriteBorder sx={{ fontSize: 29 }} />
+              </IconButton>
+              <IconButton onClick={() => navigate("/cart")}>
+                <AddShoppingCart
+                  className="text-gray-700"
+                  sx={{ fontSize: 29 }}
+                />
+              </IconButton>
+            </>
+          )}
 
           {isLoggedin && isUser && (
             <Button

@@ -11,7 +11,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import OrderStepper from "./OrderStepper";
 import PaymentsIcon from "@mui/icons-material/Payments";
-import { fetchOrderById } from "../../../State/customer/orderSlice";
+import {
+  fetchOrderById,
+  cancelOrder,
+} from "../../../State/customer/orderSlice";
 import { useDispatch } from "react-redux";
 
 function OrderDetails() {
@@ -21,11 +24,13 @@ function OrderDetails() {
 
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "error",
   });
+
   const cancellableStatuses = ["PLACED", "PACKED"];
 
   useEffect(() => {
@@ -47,7 +52,31 @@ function OrderDetails() {
     fetchOrder();
   }, [dispatch, orderId]);
 
-  if (loading) {
+  const handleCancelOrder = async () => {
+    setCancelling(true);
+    const result = await dispatch(cancelOrder(orderId));
+    if (cancelOrder.fulfilled.match(result)) {
+      setSnackbar({
+        open: true,
+        message: "Order canceled successfully.",
+        severity: "success",
+      });
+      // refresh order status
+      const updatedOrder = await dispatch(fetchOrderById(orderId));
+      if (fetchOrderById.fulfilled.match(updatedOrder)) {
+        setOrder(updatedOrder.payload);
+      }
+    } else {
+      setSnackbar({
+        open: true,
+        message: result.payload || "Failed to cancel order",
+        severity: "error",
+      });
+    }
+    setCancelling(false);
+  };
+
+  if (loading || cancelling) {
     return (
       <Box className="flex justify-center py-20">
         <CircularProgress />
@@ -68,6 +97,8 @@ function OrderDetails() {
   const addressParts = order.shippingAddress.split(", ") || [];
   const subTotal = item?.subtotal || 0;
   const isCancellable = cancellableStatuses.includes(order.status);
+  const categoryId = item?.product?.category.id;
+
   return (
     <Box className="space-y-5 py-8">
       <section className="flex flex-col gap-5 justify-center items-center">
@@ -83,7 +114,13 @@ function OrderDetails() {
             <strong>Details:</strong> {product.description || "N/A"}
           </p>
         </div>
-        <Button onClick={() => navigate(`/reviews/${product.id}/create`)}>
+        <Button
+          onClick={() =>
+            navigate(
+              `/product-details/${categoryId}/${product.name}/${product.id}`
+            )
+          }
+        >
           Write Review
         </Button>
       </section>
@@ -112,7 +149,7 @@ function OrderDetails() {
               You Saved{" "}
               <span className="text-green-600 font-medium text-xs">
                 E£{order.discountAmount}
-              </span>
+              </span>{" "}
               in this order
             </p>
           </div>
@@ -144,8 +181,10 @@ function OrderDetails() {
               sx={{ py: "0.7rem" }}
               variant="outlined"
               fullWidth
+              onClick={handleCancelOrder}
+              disabled={cancelling}
             >
-              Cancel Order
+              {cancelling ? "Cancelling..." : "Cancel Order"}
             </Button>
           ) : (
             <p className="text-center text-sm text-gray-500">

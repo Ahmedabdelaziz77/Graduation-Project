@@ -11,7 +11,7 @@ import Address from "./Address";
 const menu = [
   { name: "Orders", path: "/account/orders" },
   { name: "Profile", path: "/account" },
-  { name: "Saved Cards", path: "/account/saved-cards" },
+  // { name: "Saved Cards", path: "/account/saved-cards" },
   { name: "Addresses", path: "/account/addresses" },
   { name: "Logout", path: "/" },
 ];

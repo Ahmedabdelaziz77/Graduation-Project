@@ -6,14 +6,27 @@ import {
   Alert,
 } from "@mui/material";
 import { useFormik } from "formik";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useDispatch, useSelector } from "react-redux";
+import { requestOtp, verifyOtp } from "../../../State/authSlice";
+import { useNavigate } from "react-router-dom";
 
 function OTP() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const {
+    loading,
+    otpStatus,
+    verificationStatus,
+    error: authError,
+    token,
+  } = useSelector((state) => state.auth);
+
   const [stage, setStage] = useState("email");
-  const [loading, setLoading] = useState(false);
   const [toastOpen, setToastOpen] = useState(false);
-  const [error, setError] = useState(null);
+  const [localError, setLocalError] = useState(null);
   const [emailSentTo, setEmailSentTo] = useState("");
 
   const formik = useFormik({
@@ -21,28 +34,47 @@ function OTP() {
       email: "",
       otp: "",
     },
-    onSubmit: (values) => {
-      setError(null);
-      setLoading(true);
+    onSubmit: async (values) => {
+      setLocalError(null);
 
       if (stage === "email") {
-        setTimeout(() => {
+        const resultAction = await dispatch(
+          requestOtp({ email: values.email })
+        );
+        if (requestOtp.fulfilled.match(resultAction)) {
           setEmailSentTo(values.email);
           setStage("otp");
-          setLoading(false);
-        }, 1000);
+        } else {
+          setLocalError(resultAction.payload || "Failed to send OTP");
+        }
       } else {
-        setTimeout(() => {
-          if (values.otp === "1234") {
-            setToastOpen(true);
-          } else {
-            setError("Invalid OTP code");
-          }
-          setLoading(false);
-        }, 1200);
+        const resultAction = await dispatch(
+          verifyOtp({ email: values.email, otp: values.otp })
+        );
+        if (verifyOtp.fulfilled.match(resultAction)) {
+          setToastOpen(true);
+        } else {
+          setLocalError(resultAction.payload || "Invalid OTP");
+        }
       }
     },
   });
+
+  // Redirect after success toast
+  useEffect(() => {
+    if (toastOpen) {
+      const timer = setTimeout(() => {
+        navigate("/");
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [toastOpen, navigate]);
+
+  useEffect(() => {
+    if (authError) {
+      setLocalError(authError);
+    }
+  }, [authError]);
 
   const handleCloseToast = (_, reason) => {
     if (reason === "clickaway") return;
@@ -74,7 +106,7 @@ function OTP() {
         }}
       />
 
-      {/* Login Card */}
+      {/* OTP Card */}
       <div className="p-8 bg-white rounded-2xl shadow-xl relative z-10 border border-white">
         <h1
           className="text-center font-bold text-3xl mb-3 tracking-wide"
@@ -105,7 +137,7 @@ function OTP() {
               name="otp"
               label="One-Time Password (OTP)"
               size="small"
-              inputProps={{ maxLength: 4 }}
+              inputProps={{ maxLength: 6 }}
               value={formik.values.otp}
               onChange={formik.handleChange}
             />
@@ -139,12 +171,12 @@ function OTP() {
           </Button>
         </form>
 
-        {error && (
+        {localError && (
           <Alert
             severity="error"
             sx={{ mt: 2, backgroundColor: "#ffe6e6", color: "#d32f2f" }}
           >
-            {error}
+            {localError}
           </Alert>
         )}
 
@@ -158,7 +190,7 @@ function OTP() {
             severity="success"
             sx={{ width: "100%", backgroundColor: "#008080", color: "#fff" }}
           >
-            OTP Verified! You're logged in.
+            ✅ OTP Verified! You&apos;re logged in.
           </Alert>
         </Snackbar>
       </div>

@@ -32,6 +32,10 @@ import OCRPage from "./customer/pages/OCR/OCRPage";
 import ThankYou from "./customer/pages/offerCustomize/ThankYou";
 import Wishlist from "./customer/pages/WishList/Wishlist";
 import OTP from "./customer/pages/Auth/OTP";
+import Search from "./customer/pages/Search/Search";
+import PaymentSuccess from "./customer/pages/Checkout/PaymentSuccess";
+import Blogs from "./customer/pages/Blogs/Blogs";
+import Services from "./customer/pages/Services/Services";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -73,17 +77,65 @@ function App() {
 
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Auth />} />
-          <Route path="/products" element={<Product />} />
-          <Route path="/shop" element={<Product />} />
+          <Route path="/login" element={<OTP />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/services" element={<Services />} />
+
+          <Route
+            path="/products"
+            element={
+              <RoleProtectedRoute
+                rolesAllowed={["ROLE_USER", "ROLE_SELLER", "ROLE_ADMIN"]}
+              >
+                <Product />{" "}
+              </RoleProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/shop"
+            element={
+              <RoleProtectedRoute
+                rolesAllowed={["ROLE_USER", "ROLE_SELLER", "ROLE_ADMIN"]}
+              >
+                <Product />
+              </RoleProtectedRoute>
+            }
+          />
+
           <Route path="/buy-products-from-image" element={<OCRPage />} />
           <Route path="/analyze-image" element={<AiSmartSuggestions />} />
-          <Route path="/wishlist" element={<Wishlist />} />
+          <Route
+            path="/wishlist"
+            element={
+              <RoleProtectedRoute
+                rolesAllowed={["ROLE_USER", "ROLE_SELLER", "ROLE_ADMIN"]}
+              >
+                <Wishlist />
+              </RoleProtectedRoute>
+            }
+          />
           <Route path="/thank-you" element={<ThankYou />} />
-          <Route path="/reviews/:productId" element={<Review />} />
+          <Route
+            path="/reviews/:productId"
+            element={
+              <RoleProtectedRoute
+                rolesAllowed={["ROLE_USER", "ROLE_SELLER", "ROLE_ADMIN"]}
+              >
+                <Review />
+              </RoleProtectedRoute>
+            }
+          />
           <Route
             path="/product-details/:categoryId/:name/:productId"
-            element={<ProductDetails />}
+            element={
+              <RoleProtectedRoute
+                rolesAllowed={["ROLE_USER", "ROLE_SELLER", "ROLE_ADMIN"]}
+              >
+                <ProductDetails />
+              </RoleProtectedRoute>
+            }
           />
 
           <Route
@@ -99,6 +151,14 @@ function App() {
             element={
               <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
                 <Checkout />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/payment-success"
+            element={
+              <RoleProtectedRoute rolesAllowed={["ROLE_USER"]}>
+                <PaymentSuccess />
               </RoleProtectedRoute>
             }
           />
@@ -161,7 +221,6 @@ function App() {
           />
         </Routes>
 
-        {/* ✅ Global Toast Handler */}
         <ToastContainer
           position="top-right"
           autoClose={3000}

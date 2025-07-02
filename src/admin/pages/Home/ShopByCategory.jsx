@@ -20,6 +20,7 @@ import {
   fetchCategories,
   updateCategory,
 } from "../../../State/customer/categorySlice";
+import Spinner from "../../../components/Spinner";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -43,7 +44,9 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 function ShopByCategory() {
   const dispatch = useDispatch();
-  const { list: categories } = useSelector((state) => state.categories);
+  const { list: categories, loading } = useSelector(
+    (state) => state.categories
+  );
 
   const [editingIndex, setEditingIndex] = useState(null);
   const [editValues, setEditValues] = useState({});
@@ -116,7 +119,13 @@ function ShopByCategory() {
   const handleSnackbarClose = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
   };
-
+  if (loading) {
+    return (
+      <div>
+        <Spinner />
+      </div>
+    );
+  }
   return (
     <>
       <TableContainer component={Paper} sx={{ mt: 4 }}>

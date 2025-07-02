@@ -30,6 +30,7 @@ export const addProduct = createAsyncThunk(
   "seller/addProduct",
   async (productData, { rejectWithValue }) => {
     try {
+      console.log(productData);
       const response = await api.post("/products/seller", productData);
       return response.data;
     } catch (error) {

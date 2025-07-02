@@ -30,7 +30,7 @@ function PricingCard() {
       const couponDiscount = validationResult?.valid
         ? validationResult.discountAmount
         : 0;
-      const shipping = subtotal > 500 ? 0 : 50;
+      const shipping = 0;
       const total = subtotal - couponDiscount + shipping;
 
       return { subtotal, discount, couponDiscount, shipping, total };

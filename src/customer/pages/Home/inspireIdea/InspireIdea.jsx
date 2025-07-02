@@ -23,7 +23,7 @@ const InspireIdea = () => {
     if (!isHovering) {
       intervalRef.current = setInterval(() => {
         setCurrentImg((prev) => (prev + 1) % 5); // Assuming 5 images
-      }, 1000);
+      }, 2000);
     }
 
     return () => clearInterval(intervalRef.current);

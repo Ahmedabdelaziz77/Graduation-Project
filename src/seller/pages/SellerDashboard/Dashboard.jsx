@@ -24,6 +24,17 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
+import { useSelector, useDispatch } from "react-redux";
+import { useEffect } from "react";
+import {
+  fetchSellerStats,
+  fetchTopSoldCategories,
+} from "../../../State/seller/statsSlice";
+import { fetchSellerOrderItems } from "../../../State/customer/orderItemsSlice";
+import {
+  fetchMonthlyRevenue,
+  fetchLastPayments,
+} from "../../../State/customer/paymentSlice";
 
 ChartJS.register(
   CategoryScale,
@@ -38,38 +49,77 @@ ChartJS.register(
 );
 
 const Dashboard = () => {
-  const kpis = [
-    { title: "Total Sales", value: "$125,400", change: "+12%" },
-    { title: "Orders", value: "1,243", change: "+8%" },
-    { title: "Devices Sold", value: "3,410", change: "+16%" },
-    { title: "Avg. Order Value", value: "$102", change: "+7%" },
+  const dispatch = useDispatch();
+  const { stats, topCategories } = useSelector((state) => state.sellerStats);
+  const { items: allOrderItems } = useSelector((state) => state.orderItems);
+  const { monthlyRevenue, lastPayments } = useSelector(
+    (state) => state.payment
+  );
+
+  useEffect(() => {
+    dispatch(fetchSellerStats());
+    dispatch(fetchTopSoldCategories());
+    dispatch(fetchSellerOrderItems());
+    dispatch(fetchMonthlyRevenue());
+    dispatch(fetchLastPayments());
+  }, [dispatch]);
+
+  const recentOrders = [...allOrderItems]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 5);
+
+  const months = [
+    "JANUARY",
+    "FEBRUARY",
+    "MARCH",
+    "APRIL",
+    "MAY",
+    "JUNE",
+    "JULY",
+    "AUGUST",
+    "SEPTEMBER",
+    "OCTOBER",
+    "NOVEMBER",
+    "DECEMBER",
   ];
 
-  const lineData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Revenue",
-        data: [1200, 1450, 1300, 1600, 1850, 2000],
-        borderColor: "#5eead4",
-        backgroundColor: "transparent",
-        tension: 0.4,
-      },
-    ],
-  };
+  const monthlyLabels = months;
+  const monthlyValues = months.map((month) => monthlyRevenue[month] ?? 0);
 
-  // Category share
+  const latestPayment = lastPayments?.length
+    ? [...lastPayments].sort(
+        (a, b) => new Date(b.paymentDate) - new Date(a.paymentDate)
+      )[0]
+    : null;
+
+  const kpis = [
+    {
+      title: "Total Earnings",
+      value: `E£${stats?.totalEarnings ?? 0}`,
+    },
+    {
+      title: "Orders",
+      value: stats?.totalOrders ?? 0,
+    },
+    {
+      title: "Devices Sold",
+      value: stats?.totalItemsSold ?? 0,
+    },
+    {
+      title: "Last Payment",
+      value: latestPayment
+        ? `E£${latestPayment.paymentAmount.toLocaleString()} on ${new Date(
+            latestPayment.paymentDate
+          ).toLocaleDateString()}`
+        : "No payments yet",
+    },
+  ];
+
   const doughnutData = {
-    labels: [
-      "Smart Lights",
-      "Smart Hubs",
-      "Security Cameras",
-      "Plugs",
-      "Sensors",
-    ],
+    labels: topCategories?.map((cat) => cat.categoryName) ?? [],
     datasets: [
       {
-        data: [35, 25, 20, 10, 10],
+        data: topCategories?.map((cat) => cat.totalItemsSold) ?? [],
         backgroundColor: [
           "#5eead4",
           "#14b8a6",
@@ -81,80 +131,36 @@ const Dashboard = () => {
     ],
   };
 
-  // Product sales bar
   const barData = {
-    labels: ["Lights", "Hubs", "Cameras", "Thermostats", "Plugs"],
+    labels: topCategories?.map((cat) => cat.categoryName) ?? [],
     datasets: [
       {
         label: "Units Sold",
-        data: [850, 650, 500, 300, 450],
+        data: topCategories?.map((cat) => cat.totalItemsSold) ?? [],
         backgroundColor: "#5eead4",
       },
     ],
   };
 
-  // Orders table
-  const orders = [
-    {
-      id: "#ORD1001",
-      customer: "Alice",
-      date: "2025-05-18",
-      product: "Smart Hub",
-      amount: "$89.99",
-    },
-    {
-      id: "#ORD1002",
-      customer: "Bob",
-      date: "2025-05-18",
-      product: "Smart Light x2",
-      amount: "$59.98",
-    },
-    {
-      id: "#ORD1003",
-      customer: "Carol",
-      date: "2025-05-17",
-      product: "Camera Kit",
-      amount: "$129.00",
-    },
-    {
-      id: "#ORD1004",
-      customer: "David",
-      date: "2025-05-17",
-      product: "Smart Plug",
-      amount: "$19.99",
-    },
-  ];
-
   return (
     <Box sx={{ minHeight: "100vh", color: "#d1fae5", p: 3 }}>
       {/* KPI Cards */}
       <Grid container spacing={3} mb={4}>
-        {kpis.map(({ title, value, change }) => (
+        {kpis.map(({ title, value }) => (
           <Grid item xs={12} sm={6} md={3} key={title}>
             <Card sx={{ bgcolor: "#134e4a", color: "#d1fae5" }} elevation={3}>
               <CardContent>
                 <Typography variant="subtitle2" sx={{ color: "#81e6d9" }}>
                   {title}
                 </Typography>
-                <Typography variant="h6">
-                  {value}{" "}
-                  <Typography
-                    component="span"
-                    sx={{
-                      color: change.startsWith("+") ? "#86efac" : "#f87171",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {change}
-                  </Typography>
-                </Typography>
+                <Typography variant="h6">{value}</Typography>
               </CardContent>
             </Card>
           </Grid>
         ))}
       </Grid>
 
-      {/* Revenue Chart */}
+      {/* Monthly Revenue Line Chart */}
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12}>
           <Card sx={{ bgcolor: "#134e4a", color: "#d1fae5" }} elevation={3}>
@@ -163,7 +169,18 @@ const Dashboard = () => {
                 Monthly Revenue
               </Typography>
               <Line
-                data={lineData}
+                data={{
+                  labels: monthlyLabels,
+                  datasets: [
+                    {
+                      label: "Revenue",
+                      data: monthlyValues,
+                      borderColor: "#5eead4",
+                      backgroundColor: "transparent",
+                      tension: 0.4,
+                    },
+                  ],
+                }}
                 options={{
                   responsive: true,
                   plugins: { legend: { labels: { color: "#d1fae5" } } },
@@ -178,7 +195,7 @@ const Dashboard = () => {
         </Grid>
       </Grid>
 
-      {/* Orders Table */}
+      {/* Orders Table + Doughnut Chart */}
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} md={8}>
           <Card sx={{ bgcolor: "#134e4a", color: "#d1fae5" }} elevation={3}>
@@ -200,19 +217,19 @@ const Dashboard = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {orders.map((order) => (
+                    {recentOrders.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell sx={{ color: "#81e6d9" }}>
-                          {order.id}
+                          #{order.orderId}
                         </TableCell>
                         <TableCell sx={{ color: "#81e6d9" }}>
-                          {order.customer}
+                          {order.userName}
                         </TableCell>
                         <TableCell sx={{ color: "#81e6d9" }}>
-                          {order.date}
+                          {new Date(order.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell sx={{ color: "#81e6d9" }}>
-                          {order.product}
+                          {order.product?.name}
                         </TableCell>
                         <TableCell sx={{ color: "#81e6d9" }} align="right">
                           <Box
@@ -224,7 +241,7 @@ const Dashboard = () => {
                               fontWeight: 600,
                             }}
                           >
-                            {order.amount}
+                            E£{order.product?.sellingPrice ?? order.subtotal}
                           </Box>
                         </TableCell>
                       </TableRow>
@@ -236,7 +253,6 @@ const Dashboard = () => {
           </Card>
         </Grid>
 
-        {/* Doughnut Chart */}
         <Grid item xs={12} md={4}>
           <Card
             sx={{ bgcolor: "#134e4a", color: "#d1fae5", textAlign: "center" }}
