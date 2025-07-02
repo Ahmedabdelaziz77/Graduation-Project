@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model weights
+*.pt
+
+# Image outputs and temp files
+*.jpg
+*.jpeg
+*.png
+*.gif
+static/annotated_images/
+
+# Logs
+*.log
+
+# Jupyter notebooks (optional)
+.ipynb_checkpoints/
+
+# Compiled files
+*.egg-info/
+dist/
+build/

@@ -1,0 +1,33 @@
+# FastAPI & ASGI Server
+fastapi
+uvicorn[standard]
+
+# Image Processing & OCR
+easyocr
+Pillow
+numpy
+
+# YOLOv8
+ultralytics
+
+# Sentence Embedding
+sentence-transformers
+torch
+
+# Text Matching
+rapidfuzz
+
+# OpenAI-compatible GPT
+openai
+python-dotenv
+
+# HTTP Requests
+requests
+
+# For CORS Middleware
+python-multipart
+
+# Optional - if you use fonts like Arial.ttf
+matplotlib
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+# pip install -r requirements.txt
